@@ -147,6 +147,10 @@ jobs:
         shell: bash
         run: mkdir -p dist
 
+      - name: Create model resource placeholder
+        shell: bash
+        run: mkdir -p src-tauri/resources/models/bge-small-zh-v1.5 && touch src-tauri/resources/models/bge-small-zh-v1.5/placeholder
+
       - name: Check Rust formatting
         run: cargo fmt --check --manifest-path src-tauri/Cargo.toml
 
@@ -189,7 +193,7 @@ jobs:
 
       - name: Create frontend dist placeholder
         shell: bash
-        run: mkdir -p dist
+        run: mkdir -p dist && mkdir -p src-tauri/resources/models/bge-small-zh-v1.5 && touch src-tauri/resources/models/bge-small-zh-v1.5/placeholder
 
       - name: Prepare WSL2-backed test environment
         shell: pwsh
