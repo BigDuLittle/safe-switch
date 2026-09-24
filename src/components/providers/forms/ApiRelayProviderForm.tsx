@@ -2,12 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { ImeSafeInput } from "@/components/ui/ime-safe-input";
 import type { ProviderFormData } from "@/lib/schemas/provider";
@@ -20,10 +15,7 @@ import {
   useHermesFormState,
 } from "./hooks/useHermesFormState";
 import { hermesProviderPresets } from "@/config/hermesProviderPresets";
-import type {
-  ProviderFormProps,
-  ProviderFormValues,
-} from "./ProviderForm";
+import type { ProviderFormProps, ProviderFormValues } from "./ProviderForm";
 
 const PRESET_ENTRIES = hermesProviderPresets.map((preset, index) => ({
   id: String(index),

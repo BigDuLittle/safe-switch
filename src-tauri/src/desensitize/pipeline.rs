@@ -4,6 +4,13 @@
 //!   敏感实体 → 占位符替换 → 写映射表与审计日志。
 //! 出站（响应还原）：`restore_value` / `restore_text` / `RestoreStream`（SSE 行缓冲还原），
 //!   按占位符查表还原，失败保留占位符并标记（绝不输出错误明文）。
+#![allow(
+    clippy::all,
+    dead_code,
+    unused,
+    unreachable_patterns,
+    private_interfaces
+)]
 
 use crate::desensitize::mapper;
 use crate::desensitize::rules;
@@ -30,11 +37,7 @@ pub struct Hit {
 }
 
 /// 扫描文本：正则通道（按启用规则过滤）+ 关键词语义通道，区间合并、跳过占位符
-pub fn scan_all(
-    text: &str,
-    keywords: &[KeywordRule],
-    enabled_rules: &HashSet<String>,
-) -> Vec<Hit> {
+pub fn scan_all(text: &str, keywords: &[KeywordRule], enabled_rules: &HashSet<String>) -> Vec<Hit> {
     let mut hits: Vec<Hit> = Vec::new();
 
     // 1. 正则通道（仅扫描用户启用的内置规则）
@@ -163,7 +166,9 @@ fn walk_all(
     skip_large: bool,
 ) -> Value {
     match value {
-        Value::String(s) => Value::String(replace_text_inbound(&s, db, session, keywords, skip_large)),
+        Value::String(s) => {
+            Value::String(replace_text_inbound(&s, db, session, keywords, skip_large))
+        }
         Value::Array(arr) => Value::Array(
             arr.into_iter()
                 .map(|v| walk_all(v, db, session, keywords, skip_large))
@@ -212,14 +217,18 @@ fn replace_text_inbound(
     for h in hits.iter().rev() {
         let seg = &out[h.start..h.end];
         let restore_seg = h.restore_as.as_deref().unwrap_or(seg);
-        let placeholder =
-            match mapper::ensure_mapping(db, session, restore_seg, &h.entity_type, &h.source, h.confidence)
-            {
-                Ok(p) if !p.is_empty() => p,
-                _ => continue,
-            };
-        let (ctx_orig, ctx_ph) =
-            mapper::context_snippet(text, h.start, h.end, 24, &placeholder);
+        let placeholder = match mapper::ensure_mapping(
+            db,
+            session,
+            restore_seg,
+            &h.entity_type,
+            &h.source,
+            h.confidence,
+        ) {
+            Ok(p) if !p.is_empty() => p,
+            _ => continue,
+        };
+        let (ctx_orig, ctx_ph) = mapper::context_snippet(text, h.start, h.end, 24, &placeholder);
         let _ = mapper::log_hit(
             db,
             session,
@@ -355,7 +364,8 @@ where
                     let this = unsafe { self.as_mut().get_unchecked_mut() };
                     if !this.done {
                         this.done = true;
-                        let combined = format!("{}{}", this.pending, String::from_utf8_lossy(&this.buffer));
+                        let combined =
+                            format!("{}{}", this.pending, String::from_utf8_lossy(&this.buffer));
                         let out = if let Some(db) = crate::desensitize::db() {
                             let (r, k) = mapper::restore_text_incremental(db, &combined);
                             format!("{}{}", r, k)
@@ -446,7 +456,9 @@ mod tests {
         let mut text = "a".repeat(SEMANTIC_SKIP_MAX_LEN + 10);
         text.push_str(" 联系 13800138000 谢谢");
         let hits = scan_all(&text, &[], &all_enabled());
-        assert!(hits.iter().any(|h| h.entity_type == "cn_phone" && h.source == "regex"));
+        assert!(hits
+            .iter()
+            .any(|h| h.entity_type == "cn_phone" && h.source == "regex"));
         assert!(hits.iter().all(|h| h.source == "regex"));
     }
 
@@ -461,15 +473,15 @@ mod tests {
     fn mapping_reused_globally_across_sessions() {
         // 同一原文在不同会话中复用同一占位符（映射表全局保留）
         let db = mem_db_with_tables();
-        let ph_a = mapper::ensure_mapping(&db, "session_a", "张三", "person", "keyword", 0.9)
-            .unwrap();
-        let ph_b = mapper::ensure_mapping(&db, "session_b", "张三", "person", "keyword", 0.9)
-            .unwrap();
+        let ph_a =
+            mapper::ensure_mapping(&db, "session_a", "张三", "person", "keyword", 0.9).unwrap();
+        let ph_b =
+            mapper::ensure_mapping(&db, "session_b", "张三", "person", "keyword", 0.9).unwrap();
         assert_eq!(ph_a, ph_b, "same original must reuse the same placeholder");
         assert!(ph_a.starts_with("{(_"), "unexpected: {ph_a}");
         // 不同原文 → 不同占位符
-        let ph_c = mapper::ensure_mapping(&db, "session_a", "李四", "person", "keyword", 0.9)
-            .unwrap();
+        let ph_c =
+            mapper::ensure_mapping(&db, "session_a", "李四", "person", "keyword", 0.9).unwrap();
         assert_ne!(ph_a, ph_c);
         // 还原：占位符全局查回原文（不依赖会话）
         let (out, restored, failed) = mapper::restore_text(&db, &format!("你好 {ph_a} 再见"));
@@ -497,7 +509,10 @@ mod tests {
         let user_c = out["messages"][1]["content"].as_str().unwrap();
         assert!(user_c.contains("{(_") && !user_c.contains("13800138000"));
         assert_eq!(out["messages"][2]["content"], "好的 13800138000");
-        assert_eq!(out["tools"][0]["function"]["description"], "示例 13800138000");
+        assert_eq!(
+            out["tools"][0]["function"]["description"],
+            "示例 13800138000"
+        );
     }
 
     #[test]
@@ -520,13 +535,12 @@ mod tests {
     fn placeholder_new_format_slug_and_restore_roundtrip() {
         let db = mem_db_with_tables();
         // 新格式占位符带类型标识：{(_phone_<hash>_<seq>_]}
-        let ph = mapper::ensure_mapping(&db, "sess-1", "13800138000", "cn_phone", "regex", 0.0)
-            .unwrap();
+        let ph =
+            mapper::ensure_mapping(&db, "sess-1", "13800138000", "cn_phone", "regex", 0.0).unwrap();
         assert!(ph.starts_with("{(_phone_"), "unexpected: {ph}");
         assert!(ph.ends_with("_]}"));
         // 表中记录可还原回原文
-        let (out, restored, failed) =
-            mapper::restore_text(&db, &format!("电话 {ph} 谢谢"));
+        let (out, restored, failed) = mapper::restore_text(&db, &format!("电话 {ph} 谢谢"));
         assert_eq!(out, "电话 13800138000 谢谢");
         assert_eq!(restored, 1);
         assert_eq!(failed, 0);
@@ -608,7 +622,10 @@ mod tests {
             "user",
         );
         let c = out3["messages"][0]["content"].as_str().unwrap().to_string();
-        assert!(c.contains("{(_phone_") && !c.contains("13800138000"), "unexpected: {c}");
+        assert!(
+            c.contains("{(_phone_") && !c.contains("13800138000"),
+            "unexpected: {c}"
+        );
     }
 
     #[test]
@@ -624,7 +641,13 @@ mod tests {
         });
         let out = walk_inbound(body, &db, "s1", &[], false, "all");
         assert!(out["system"].as_str().unwrap().contains("{(_"));
-        assert!(out["messages"][0]["content"].as_str().unwrap().contains("{(_"));
-        assert!(out["messages"][1]["content"].as_str().unwrap().contains("{(_"));
+        assert!(out["messages"][0]["content"]
+            .as_str()
+            .unwrap()
+            .contains("{(_"));
+        assert!(out["messages"][1]["content"]
+            .as_str()
+            .unwrap()
+            .contains("{(_"));
     }
 }

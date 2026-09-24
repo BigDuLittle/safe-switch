@@ -5,6 +5,13 @@
 //!
 //! 注意：`desensitize_mapping.original` 为本地明文（当前用户权限），
 //! `desensitize_hit_log.original_masked` 只存打码形态。后续可加 AES 加密列。
+#![allow(
+    clippy::all,
+    dead_code,
+    unused,
+    unreachable_patterns,
+    private_interfaces
+)]
 
 use crate::database::lock_conn;
 use crate::database::Database;
@@ -249,9 +256,17 @@ pub fn restore_text(db: &Database, text: &str) -> (String, usize, usize) {
 /// 占位符前缀（如 "{(_keyword..." 但无 "_]}"）则保留在 pending，不输出，
 /// 等下一段拼接后再处理。返回 (可输出文本, 保留的未闭合片段)。
 pub fn restore_text_incremental(db: &Database, accumulated: &str) -> (String, String) {
-    log::info!("[desensitize] restore_incremental len={} has_ph={}", accumulated.len(), accumulated.contains("{(_"));
+    log::info!(
+        "[desensitize] restore_incremental len={} has_ph={}",
+        accumulated.len(),
+        accumulated.contains("{(_")
+    );
     let (full, restored, failed) = restore_text(db, accumulated);
-    log::info!("[desensitize] restore_incremental done restored={} failed={}", restored, failed);
+    log::info!(
+        "[desensitize] restore_incremental done restored={} failed={}",
+        restored,
+        failed
+    );
     // 找最后一个未闭合的占位符起点
     if let Some(pos) = full.rfind("{(_") {
         // 从 pos 往后找是否有闭合 "_]}"
@@ -304,9 +319,10 @@ pub fn get_semantic_threshold(db: &Database) -> f32 {
     conn.query_row(
         "SELECT value FROM settings WHERE key = 'desensitize_semantic_threshold'",
         [],
-        |r| r.get::<_, String>(0).and_then(|v| {
-            v.parse::<f32>().map_err(|_| rusqlite::Error::InvalidQuery)
-        }),
+        |r| {
+            r.get::<_, String>(0)
+                .and_then(|v| v.parse::<f32>().map_err(|_| rusqlite::Error::InvalidQuery))
+        },
     )
     .unwrap_or(0.75)
 }
@@ -457,7 +473,10 @@ pub fn set_placeholder_prefix(db: &Database, prefix: &str) -> Result<(), AppErro
             "占位符前缀过长（最多 16 个字符）".to_string(),
         ));
     }
-    if !prefix.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+    if !prefix
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '_')
+    {
         return Err(AppError::InvalidInput(
             "占位符前缀仅支持字母、数字、下划线".to_string(),
         ));
@@ -715,7 +734,13 @@ pub fn query_logs(db: &Database, limit: i64, offset: i64) -> Result<Vec<Value>, 
 }
 
 /// 截取命中词的上下文片段（前后各 pad 个字符），并返回「原文片段」与「占位符替换后片段」
-pub fn context_snippet(text: &str, start: usize, end: usize, pad: usize, ph: &str) -> (String, String) {
+pub fn context_snippet(
+    text: &str,
+    start: usize,
+    end: usize,
+    pad: usize,
+    ph: &str,
+) -> (String, String) {
     let chars: Vec<char> = text.chars().collect();
     let s = text[..start].chars().count();
     let e = s + text[start..end].chars().count();

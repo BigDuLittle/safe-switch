@@ -52,7 +52,7 @@ impl McpApps {
             AppType::OpenClaw => {} // OpenClaw doesn't support MCP, ignore
             AppType::Hermes => self.hermes = enabled,
             AppType::Mcode => self.mcode = enabled,
-            AppType::Pi => {}            // Pi core has no native MCP registry.
+            AppType::Pi => {} // Pi core has no native MCP registry.
             AppType::ClaudeDesktop => {}
             AppType::ApiRelay => {} // Claude Desktop 3P provider config doesn't support MCP here
         }
@@ -442,7 +442,12 @@ impl AppType {
     pub fn is_additive_mode(&self) -> bool {
         matches!(
             self,
-            AppType::OpenCode | AppType::OpenClaw | AppType::Hermes | AppType::Pi | AppType::Mcode | AppType::ApiRelay
+            AppType::OpenCode
+                | AppType::OpenClaw
+                | AppType::Hermes
+                | AppType::Pi
+                | AppType::Mcode
+                | AppType::ApiRelay
         )
     }
 
@@ -532,7 +537,7 @@ impl CommonConfigSnippets {
             AppType::OpenCode => self.opencode.as_ref(),
             AppType::OpenClaw => self.openclaw.as_ref(),
             AppType::Hermes => self.hermes.as_ref(),
-            AppType::Pi | AppType::Mcode | AppType::ApiRelay => None,
+            AppType::Pi | AppType::Mcode => None,
         }
     }
 
@@ -548,7 +553,7 @@ impl CommonConfigSnippets {
             AppType::OpenCode => self.opencode = snippet,
             AppType::OpenClaw => self.openclaw = snippet,
             AppType::Hermes => self.hermes = snippet,
-            AppType::Pi | AppType::Mcode | AppType::ApiRelay => {}
+            AppType::Pi | AppType::Mcode => {}
         }
     }
 }

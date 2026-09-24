@@ -50,7 +50,12 @@ pub struct VisibleApps {
     pub pi: bool,
     #[serde(default = "default_true")]
     pub mcode: bool,
-    #[serde(rename = "api-relay", alias = "apiRelay", alias = "api_relay", default = "default_true")]
+    #[serde(
+        rename = "api-relay",
+        alias = "apiRelay",
+        alias = "api_relay",
+        default = "default_true"
+    )]
     pub api_relay: bool,
 }
 

@@ -20,6 +20,7 @@ const ENDPOINT_TIMEOUT_SECS: Record<AppId, number> = {
   hermes: 8,
   pi: 8,
   mcode: 8,
+  "api-relay": 0,
 };
 
 interface TestResult {

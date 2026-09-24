@@ -93,8 +93,7 @@ export interface DesensitizePreview {
 }
 
 export const desensitizeApi = {
-  dashboard: () =>
-    invoke<DesensitizeDashboard>("get_desensitize_dashboard"),
+  dashboard: () => invoke<DesensitizeDashboard>("get_desensitize_dashboard"),
 
   listRules: () => invoke<DesensitizeRule[]>("list_desensitize_rules"),
 
@@ -104,8 +103,7 @@ export const desensitizeApi = {
   setRuleEnabled: (entityType: string, enabled: boolean) =>
     invoke<void>("set_desensitize_rule_enabled", { entityType, enabled }),
 
-  listKeywords: () =>
-    invoke<DesensitizeKeyword[]>("list_desensitize_keywords"),
+  listKeywords: () => invoke<DesensitizeKeyword[]>("list_desensitize_keywords"),
 
   getKeywordVariants: (keyword: string) =>
     invoke<{ word: string; source: string }[]>(
@@ -181,8 +179,7 @@ export const desensitizeApi = {
       sessionKey,
     }),
 
-  getEnabled: () =>
-    invoke<{ enabled: boolean }>("get_desensitize_enabled"),
+  getEnabled: () => invoke<{ enabled: boolean }>("get_desensitize_enabled"),
 
   setEnabled: (enabled: boolean) =>
     invoke<void>("set_desensitize_enabled", { enabled }),
@@ -195,8 +192,7 @@ export const desensitizeApi = {
   setSkipSemanticLarge: (skip: boolean) =>
     invoke<void>("set_desensitize_skip_semantic_large", { skip }),
 
-  getScope: () =>
-    invoke<{ scope: "user" | "all" }>("get_desensitize_scope"),
+  getScope: () => invoke<{ scope: "user" | "all" }>("get_desensitize_scope"),
 
   setScope: (scope: "user" | "all") =>
     invoke<void>("set_desensitize_scope", { scope }),

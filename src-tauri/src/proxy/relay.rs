@@ -8,15 +8,22 @@
 //! 配置项（settings 表）：
 //! - `api_relay_key`            本地 Key（首次访问自动生成，可重新生成）
 //! 上游地址与 Key 来自 providers 表 app_type=api-relay 的当前选中供应商（settings_config.baseUrl / apiKey）
+#![allow(
+    clippy::all,
+    dead_code,
+    unused,
+    unreachable_patterns,
+    private_interfaces
+)]
 
 use super::ProxyError;
 use crate::database::Database;
 use crate::desensitize::pipeline::RestoreStream;
 use crate::error::AppError;
+use axum::body::Body;
 use axum::extract::State;
 use axum::http::{header, HeaderMap, Request};
 use axum::response::Response;
-use axum::body::Body;
 use http_body_util::BodyExt;
 use reqwest::StatusCode;
 
@@ -26,11 +33,9 @@ pub fn get_relay_setting(db: &Database, key: &str) -> Option<String> {
         Ok(c) => c,
         Err(e) => e.into_inner(),
     };
-    conn.query_row(
-        "SELECT value FROM settings WHERE key = ?1",
-        [key],
-        |r| r.get::<_, String>(0),
-    )
+    conn.query_row("SELECT value FROM settings WHERE key = ?1", [key], |r| {
+        r.get::<_, String>(0)
+    })
     .ok()
 }
 
@@ -99,7 +104,7 @@ fn get_upstream(db: &Database) -> Result<(String, String), ProxyError> {
         .map_err(|e| ProxyError::Internal(format!("读取 API 中转当前供应商失败: {e}")))?
         .ok_or_else(|| {
             ProxyError::Internal(
-                "API 中转尚未配置上游供应商，请在 CC Switch 的 API 中转页面添加并启用".to_string()
+                "API 中转尚未配置上游供应商，请在 CC Switch 的 API 中转页面添加并启用".to_string(),
             )
         })?;
     let provider = db
@@ -112,9 +117,7 @@ fn get_upstream(db: &Database) -> Result<(String, String), ProxyError> {
         .or_else(|| provider.settings_config.get("base_url"))
         .and_then(serde_json::Value::as_str)
         .filter(|s| !s.trim().is_empty())
-        .ok_or_else(|| {
-            ProxyError::Internal("API 中转当前供应商缺少 Base URL".to_string())
-        })?
+        .ok_or_else(|| ProxyError::Internal("API 中转当前供应商缺少 Base URL".to_string()))?
         .to_string();
     let key = provider
         .settings_config
@@ -263,7 +266,11 @@ async fn forward(
             let mut model = String::new();
             if let Some(ref b) = original_body {
                 if let Ok(v) = serde_json::from_slice::<serde_json::Value>(b) {
-                    model = v.get("model").and_then(|m| m.as_str()).unwrap_or("").to_string();
+                    model = v
+                        .get("model")
+                        .and_then(|m| m.as_str())
+                        .unwrap_or("")
+                        .to_string();
                     if let Some(msgs) = v.get("messages").and_then(|m| m.as_array()) {
                         for m in msgs.iter().rev() {
                             if m.get("role").and_then(|r| r.as_str()) == Some("user") {
@@ -276,7 +283,15 @@ async fn forward(
                     }
                 }
             }
-            record_log(d, &model, "api-relay", &req_summary, "[流式响应]", status.as_u16() as i64, 0);
+            record_log(
+                d,
+                &model,
+                "api-relay",
+                &req_summary,
+                "[流式响应]",
+                status.as_u16() as i64,
+                0,
+            );
         }
         builder
             .body(Body::from_stream(RestoreStream::new(stream)))
@@ -293,7 +308,11 @@ async fn forward(
             let mut model = String::new();
             if let Some(ref b) = original_body {
                 if let Ok(v) = serde_json::from_slice::<serde_json::Value>(b) {
-                    model = v.get("model").and_then(|m| m.as_str()).unwrap_or("").to_string();
+                    model = v
+                        .get("model")
+                        .and_then(|m| m.as_str())
+                        .unwrap_or("")
+                        .to_string();
                     if let Some(msgs) = v.get("messages").and_then(|m| m.as_array()) {
                         for m in msgs.iter().rev() {
                             if m.get("role").and_then(|r| r.as_str()) == Some("user") {
@@ -308,11 +327,22 @@ async fn forward(
             }
             let mut resp_summary = String::new();
             if let Ok(v) = serde_json::from_slice::<serde_json::Value>(&full) {
-                if let Some(c) = v.pointer("/choices/0/message/content").and_then(|c| c.as_str()) {
+                if let Some(c) = v
+                    .pointer("/choices/0/message/content")
+                    .and_then(|c| c.as_str())
+                {
                     resp_summary = c.chars().take(200).collect();
                 }
             }
-            record_log(d, &model, "api-relay", &req_summary, &resp_summary, status.as_u16() as i64, 0);
+            record_log(
+                d,
+                &model,
+                "api-relay",
+                &req_summary,
+                &resp_summary,
+                status.as_u16() as i64,
+                0,
+            );
         }
 
         let restored = crate::desensitize::pipeline::restore_bytes(&full);
@@ -411,7 +441,11 @@ pub fn record_log(
 }
 
 /// 查询 API 中转请求记录（分页，倒序）
-pub fn query_logs(db: &crate::database::Database, limit: i64, offset: i64) -> Vec<serde_json::Value> {
+pub fn query_logs(
+    db: &crate::database::Database,
+    limit: i64,
+    offset: i64,
+) -> Vec<serde_json::Value> {
     let conn = db.conn.lock().unwrap_or_else(|e| e.into_inner());
     let mut out = Vec::new();
     if let Ok(mut stmt) = conn.prepare(

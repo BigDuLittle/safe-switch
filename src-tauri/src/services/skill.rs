@@ -2462,7 +2462,8 @@ impl SkillService {
 
         let dest = app_dir.join(&directory);
 
-        if matches!(app, AppType::Pi | AppType::Mcode | AppType::ApiRelay) && (dest.exists() || Self::is_symlink(&dest))
+        if matches!(app, AppType::Pi | AppType::Mcode | AppType::ApiRelay)
+            && (dest.exists() || Self::is_symlink(&dest))
         {
             Self::ensure_pi_skill_destination_matches(&source, &dest, &directory)?;
         }

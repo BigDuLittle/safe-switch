@@ -1,6 +1,13 @@
 //! [desensitize] 脱敏映射中心 Tauri 命令
 //!
 //! 前端通过 invoke 调用：仪表盘 / 规则 / 关键词 / 日志 / 试算 / 清空映射。
+#![allow(
+    clippy::all,
+    dead_code,
+    unused,
+    unreachable_patterns,
+    private_interfaces
+)]
 
 use crate::desensitize::mapper;
 use crate::error::AppError;
@@ -39,7 +46,9 @@ pub fn list_desensitize_rules(state: tauri::State<'_, AppState>) -> Result<Value
 
 /// 内置规则类别（含各类计数与中文名，前端分组渲染）
 #[tauri::command]
-pub fn list_desensitize_rule_categories(state: tauri::State<'_, AppState>) -> Result<Value, String> {
+pub fn list_desensitize_rule_categories(
+    state: tauri::State<'_, AppState>,
+) -> Result<Value, String> {
     use crate::desensitize::rules;
     let enabled = rules::builtin_enabled_set(state.db.as_ref());
     let cats = rules::CATEGORIES
@@ -76,8 +85,8 @@ pub fn set_desensitize_rule_enabled(
     enabled: bool,
 ) -> Result<(), String> {
     use crate::desensitize::rules;
-    let (name, pattern, category) = rules::builtin_rule_meta(&entity_type)
-        .ok_or_else(|| format!("未知规则: {entity_type}"))?;
+    let (name, pattern, category) =
+        rules::builtin_rule_meta(&entity_type).ok_or_else(|| format!("未知规则: {entity_type}"))?;
     let conn = crate::database::lock_conn!(state.db.conn);
     let n = conn
         .execute(
@@ -435,9 +444,7 @@ pub fn set_desensitize_keyword_enabled(
 
 /// 离线语义模型状态（本地模型管理页）
 #[tauri::command]
-pub fn get_desensitize_model_status(
-    state: tauri::State<'_, AppState>,
-) -> Result<Value, String> {
+pub fn get_desensitize_model_status(state: tauri::State<'_, AppState>) -> Result<Value, String> {
     let _ = state.db;
     Ok(json!({ "embedding": crate::desensitize::semantic::model_status() }))
 }
@@ -525,7 +532,9 @@ pub fn set_desensitize_enabled(
 
 /// 大文本跳过语义通道开关状态（未配置时默认 true=跳过）
 #[tauri::command]
-pub fn get_desensitize_skip_semantic_large(state: tauri::State<'_, AppState>) -> Result<Value, String> {
+pub fn get_desensitize_skip_semantic_large(
+    state: tauri::State<'_, AppState>,
+) -> Result<Value, String> {
     let skip = mapper::get_skip_semantic_large(state.db.as_ref());
     Ok(json!({ "skipSemanticLarge": skip }))
 }

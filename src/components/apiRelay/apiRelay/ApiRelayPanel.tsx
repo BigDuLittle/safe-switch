@@ -152,11 +152,7 @@ export function ApiRelayPanel() {
         </span>
       </div>
       <CopyChip label={t("apiRelay.baseUrl")} value={baseUrl} mono />
-      <CopyChip
-        label={t("apiRelay.localKey")}
-        value={info?.key ?? ""}
-        mono
-      />
+      <CopyChip label={t("apiRelay.localKey")} value={info?.key ?? ""} mono />
       <div className="flex items-center gap-1 shrink-0">
         <TooltipProvider delayDuration={250}>
           <Tooltip>
@@ -178,24 +174,24 @@ export function ApiRelayPanel() {
           </Tooltip>
         </TooltipProvider>
         <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0"
-            aria-label={t("apiRelay.howToTitle")}
-          >
-            <HelpCircle className="w-4 h-4 text-muted-foreground" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 text-xs space-y-1.5" align="end">
-          <p className="text-sm font-medium text-foreground">
-            {t("apiRelay.howToTitle")}
-          </p>
-          <p className="text-muted-foreground">{t("apiRelay.howTo1")}</p>
-          <p className="text-muted-foreground">{t("apiRelay.howTo2")}</p>
-          <p className="text-muted-foreground">{t("apiRelay.howTo3")}</p>
-        </PopoverContent>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0"
+              aria-label={t("apiRelay.howToTitle")}
+            >
+              <HelpCircle className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 text-xs space-y-1.5" align="end">
+            <p className="text-sm font-medium text-foreground">
+              {t("apiRelay.howToTitle")}
+            </p>
+            <p className="text-muted-foreground">{t("apiRelay.howTo1")}</p>
+            <p className="text-muted-foreground">{t("apiRelay.howTo2")}</p>
+            <p className="text-muted-foreground">{t("apiRelay.howTo3")}</p>
+          </PopoverContent>
         </Popover>
       </div>
     </div>

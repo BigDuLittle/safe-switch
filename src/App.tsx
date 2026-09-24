@@ -23,7 +23,6 @@ import {
   FolderOpen,
   KeyRound,
   Shield,
-  ShieldCheck,
   Cpu,
   LayoutDashboard,
   Loader2,
@@ -108,7 +107,6 @@ import { invalidatePiProviderCaches, usePiCurrentState } from "@/lib/query/pi";
 import WorkspaceFilesPanel from "@/components/workspace/WorkspaceFilesPanel";
 import EnvPanel from "@/components/openclaw/EnvPanel";
 import ToolsPanel from "@/components/openclaw/ToolsPanel";
-import AgentsDefaultsPanel from "@/components/openclaw/AgentsDefaultsPanel";
 import OpenClawHealthBanner from "@/components/openclaw/OpenClawHealthBanner";
 import HermesMemoryPanel from "@/components/hermes/HermesMemoryPanel";
 import {
@@ -1164,7 +1162,8 @@ function App() {
               </div>
             );
           }
-          return (            <div className="px-6 flex flex-col flex-1 min-h-0 overflow-hidden">
+          return (
+            <div className="px-6 flex flex-col flex-1 min-h-0 overflow-hidden">
               <div
                 ref={providerScrollContainerRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden pb-12 px-1"
@@ -1409,7 +1408,9 @@ function App() {
                     proxyStatus !== undefined && takeoverStatus !== undefined
                   }
                 />
-                <DesensitizeToggle onOpenSettings={() => setCurrentView("desensitize")} />
+                <DesensitizeToggle
+                  onOpenSettings={() => setCurrentView("desensitize")}
+                />
                 <Button
                   variant="ghost"
                   size="icon"

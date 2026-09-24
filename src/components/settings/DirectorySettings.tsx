@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { AppId } from "@/lib/api";
 import type { ResolvedDirectories } from "@/hooks/useSettings";
 
-type DirectoryAppId = Exclude<AppId, "claude-desktop" | "mcode">;
+type DirectoryAppId = Exclude<AppId, "claude-desktop" | "mcode" | "api-relay">;
 
 interface DirectorySettingsProps {
   appConfigDir?: string;

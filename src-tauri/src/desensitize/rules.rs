@@ -8,6 +8,13 @@
 //! 注意：Rust regex crate 不支持 look-around，所有规则使用无断言正则；
 //! 片段边界（前后紧邻字符不为 ASCII 字母/数字）由 `scan_regex_filtered` 统一检查，
 //! 保留段排除（内网 IP）用 `validate` 校验函数完成。
+#![allow(
+    clippy::all,
+    dead_code,
+    unused,
+    unreachable_patterns,
+    private_interfaces
+)]
 
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -479,7 +486,10 @@ mod tests {
         let hits = scan_regex_filtered("我的手机号是13800138000，请处理", &all_default_enabled());
         assert!(!hits.is_empty());
         let (s, e, t, _, _) = &hits[0];
-        assert_eq!(&text_of("我的手机号是13800138000，请处理")[*s..*e], "13800138000");
+        assert_eq!(
+            &text_of("我的手机号是13800138000，请处理")[*s..*e],
+            "13800138000"
+        );
         assert_eq!(t, "cn_phone");
     }
 
@@ -504,7 +514,10 @@ mod tests {
         let m = hits.iter().find(|h| h.2 == "cn_driver_license");
         assert!(m.is_some());
         let (s, e, _, _, _) = m.unwrap();
-        assert_eq!(&text_of("驾驶证号：11010519491231002X 请查")[*s..*e], "11010519491231002X");
+        assert_eq!(
+            &text_of("驾驶证号：11010519491231002X 请查")[*s..*e],
+            "11010519491231002X"
+        );
     }
 
     #[test]
@@ -527,7 +540,8 @@ mod tests {
 
     #[test]
     fn secret_keys_match() {
-        let text = "配置 sk-proj-abcdef1234567890abcdef 与 ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let text =
+            "配置 sk-proj-abcdef1234567890abcdef 与 ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         let hits = scan_regex_filtered(text, &all_default_enabled());
         assert!(hits.iter().any(|h| h.2 == "openai_key"));
         assert!(hits.iter().any(|h| h.2 == "github_token"));
@@ -536,8 +550,10 @@ mod tests {
     #[test]
     fn internal_ip_and_public_ip_distinct() {
         let hits = scan_regex_filtered("内网 10.12.34.56 公网 8.8.8.8", &all_default_enabled());
-        assert!(hits.iter().any(|h| h.2 == "intranet_ip" && &text_of("内网 10.12.34.56 公网 8.8.8.8")[h.0..h.1] == "10.12.34.56"));
-        assert!(hits.iter().any(|h| h.2 == "public_ip" && &text_of("内网 10.12.34.56 公网 8.8.8.8")[h.0..h.1] == "8.8.8.8"));
+        assert!(hits.iter().any(|h| h.2 == "intranet_ip"
+            && &text_of("内网 10.12.34.56 公网 8.8.8.8")[h.0..h.1] == "10.12.34.56"));
+        assert!(hits.iter().any(|h| h.2 == "public_ip"
+            && &text_of("内网 10.12.34.56 公网 8.8.8.8")[h.0..h.1] == "8.8.8.8"));
         // 10.x 不应命中 public_ip
         assert!(!hits.iter().any(|h| h.2 == "public_ip" && h.0 < 8));
     }

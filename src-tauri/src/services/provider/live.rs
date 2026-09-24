@@ -535,7 +535,7 @@ fn settings_contain_common_config(app_type: &AppType, settings: &Value, snippet:
         | AppType::Pi
         | AppType::Mcode
         | AppType::ClaudeDesktop => false,
-        | AppType::ApiRelay => false,
+        AppType::ApiRelay => false,
     }
 }
 
@@ -612,7 +612,7 @@ pub(crate) fn remove_common_config_from_settings(
         | AppType::Pi
         | AppType::Mcode
         | AppType::ClaudeDesktop => Ok(settings.clone()),
-        | AppType::ApiRelay => Ok(settings.clone()),
+        AppType::ApiRelay => Ok(settings.clone()),
     }
 }
 
@@ -673,7 +673,8 @@ fn apply_common_config_to_settings(
         | AppType::Hermes
         | AppType::Pi
         | AppType::Mcode
-        | AppType::ClaudeDesktop | AppType::ApiRelay => Ok(settings.clone()),
+        | AppType::ClaudeDesktop
+        | AppType::ApiRelay => Ok(settings.clone()),
     }
 }
 
@@ -1970,7 +1971,12 @@ pub fn import_default_config(state: &AppState, app_type: AppType) -> Result<bool
             })
         }
         // OpenCode, OpenClaw and Hermes use additive mode and are handled by early return above
-        AppType::OpenCode | AppType::OpenClaw | AppType::Hermes | AppType::Pi | AppType::Mcode | AppType::ApiRelay => {
+        AppType::OpenCode
+        | AppType::OpenClaw
+        | AppType::Hermes
+        | AppType::Pi
+        | AppType::Mcode
+        | AppType::ApiRelay => {
             unreachable!("additive mode apps are handled by early return")
         }
     };

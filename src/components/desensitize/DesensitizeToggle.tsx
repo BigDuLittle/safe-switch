@@ -12,7 +12,10 @@ interface DesensitizeToggleProps {
   onOpenSettings?: () => void;
 }
 
-export function DesensitizeToggle({ className, onOpenSettings }: DesensitizeToggleProps) {
+export function DesensitizeToggle({
+  className,
+  onOpenSettings,
+}: DesensitizeToggleProps) {
   const { t } = useTranslation();
   const [enabled, setEnabled] = useState(true);
   const [loaded, setLoaded] = useState(false);
@@ -45,13 +48,6 @@ export function DesensitizeToggle({ className, onOpenSettings }: DesensitizeTogg
   const label = t("desensitize.toggleLabel", {
     defaultValue: "隐私保护",
   });
-  const tooltipText = enabled
-    ? t("desensitize.toggleOnTitle", {
-        defaultValue: "隐私保护已开启",
-      })
-    : t("desensitize.toggleOffTitle", {
-        defaultValue: "隐私保护已关闭",
-      });
 
   return (
     <div

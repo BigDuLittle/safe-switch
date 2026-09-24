@@ -8,6 +8,13 @@
 //!
 //! 模型文件独立存放于 `<data_dir>/.cc-switch/models/bge-small-zh-v1.5/`，
 //! 不打包进 exe；模型缺失或加载失败时语义通道自动降级为仅字面匹配。
+#![allow(
+    clippy::all,
+    dead_code,
+    unused,
+    unreachable_patterns,
+    private_interfaces
+)]
 
 use std::collections::HashSet;
 use std::sync::OnceLock;
@@ -170,9 +177,7 @@ fn locate_best_spans(
         return Vec::new();
     }
     // 分数降序，贪心保留互不重叠的片段
-    cand.sort_by(|a, b| {
-        b.2.partial_cmp(&a.2).unwrap_or(std::cmp::Ordering::Equal)
-    });
+    cand.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap_or(std::cmp::Ordering::Equal));
     let mut out: Vec<SemanticHit> = Vec::new();
     for (s, e, sc) in cand {
         if out.iter().any(|h| s < h.end && e > h.start) {
@@ -248,9 +253,11 @@ fn push_sentence(out: &mut Vec<(usize, usize, String)>, sent: &str, base: usize)
     while i < chars.len() {
         let end = (i + 32).min(chars.len());
         let s: String = chars[i..end].iter().collect();
-        out.push((base + chars[..i].iter().map(|c| c.len_utf8()).sum::<usize>(),
-                  base + chars[..end].iter().map(|c| c.len_utf8()).sum::<usize>(),
-                  s));
+        out.push((
+            base + chars[..i].iter().map(|c| c.len_utf8()).sum::<usize>(),
+            base + chars[..end].iter().map(|c| c.len_utf8()).sum::<usize>(),
+            s,
+        ));
         i += 16;
     }
 }
@@ -282,9 +289,8 @@ pub fn model_status() -> serde_json::Value {
         .join("models")
         .join("bge-small-zh-v1.5");
     let mp = dir.join("model.safetensors");
-    let downloaded = mp.exists()
-        && dir.join("tokenizer.json").exists()
-        && dir.join("config.json").exists();
+    let downloaded =
+        mp.exists() && dir.join("tokenizer.json").exists() && dir.join("config.json").exists();
     let size_mb = std::fs::metadata(&mp)
         .map(|m| m.len() as f64 / 1024.0 / 1024.0)
         .unwrap_or(0.0);
@@ -484,7 +490,12 @@ mod tests {
             "工资发放安排，工资明细见附件，请确认工资到账时间",
             &[rule("工资", "salary", "literal")],
         );
-        assert_eq!(hits.len(), 3, "should match all 3 occurrences, got {:?}", hits);
+        assert_eq!(
+            hits.len(),
+            3,
+            "should match all 3 occurrences, got {:?}",
+            hits
+        );
         // 同原文 → 由上层 ensure_mapping 复用同一占位符（mapper 层保证）
     }
 
@@ -494,7 +505,11 @@ mod tests {
         let text = "这次项目进度会议大家都按时参加了。会上讨论了薪酬结构。随后邮件又提到了薪酬调整方案。明天继续推进。";
         let hits = scan_keywords(text, &[rule("工资", "salary", "semantic")]);
         if model_ready() {
-            assert!(hits.len() >= 1, "semantic should hit at least one window, got {:?}", hits);
+            assert!(
+                hits.len() >= 1,
+                "semantic should hit at least one window, got {:?}",
+                hits
+            );
             // 同一语义相关句应各自产生命中（窗口级全量扫描），模型就绪时打印观察
             for h in &hits {
                 println!("[windows] {:?} -> {:?}", h, &text[h.start..h.end]);
@@ -505,7 +520,9 @@ mod tests {
 
     #[test]
     fn windows_split_sentence_and_slide() {
-        let w = split_windows("第一句很短。第二句话比较长的时候会按照三十二个字符滑动切分窗口测试一下。");
+        let w = split_windows(
+            "第一句很短。第二句话比较长的时候会按照三十二个字符滑动切分窗口测试一下。",
+        );
         assert!(w.len() >= 2);
         assert!(w[0].2.contains("第一句"));
     }
@@ -525,7 +542,6 @@ mod tests {
             &[rule("工资", "salary", "semantic")],
         );
         if model_ready() {
-
             assert!(
                 hits.iter().any(|h| h.entity_type == "salary"),
                 "语义命中失败: {:?}",
@@ -547,10 +563,7 @@ mod tests {
         if model_ready() {
             if let Some(h) = hits.iter().find(|h| h.entity_type == "salary") {
                 let span = &text[h.start..h.end];
-                assert!(
-                    span.contains("薪酬"),
-                    "语义应定位到薪酬片段，实际: {span}"
-                );
+                assert!(span.contains("薪酬"), "语义应定位到薪酬片段，实际: {span}");
                 assert!(
                     h.end - h.start <= 14,
                     "替换范围应收窄，实际长度: {}",

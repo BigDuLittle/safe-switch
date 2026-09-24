@@ -2,6 +2,13 @@
 //!
 //! 会话文件存放于 ~/.cc-switch/relay-sessions/{conversation_hash}.jsonl
 //! 每行一条 JSON 记录：{"type":"message","role":"user|assistant","content":"...","timestamp":ms}
+#![allow(
+    clippy::all,
+    dead_code,
+    unused,
+    unreachable_patterns,
+    private_interfaces
+)]
 
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
@@ -92,8 +99,16 @@ pub fn load_messages(path: &Path) -> Result<Vec<SessionMessage>, String> {
             Ok(v) => v,
             Err(_) => continue,
         };
-        let role = val.get("role").and_then(Value::as_str).unwrap_or("").to_string();
-        let content = val.get("content").and_then(Value::as_str).unwrap_or("").to_string();
+        let role = val
+            .get("role")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_string();
+        let content = val
+            .get("content")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_string();
         if role.is_empty() || content.is_empty() {
             continue;
         }
@@ -134,7 +149,11 @@ pub fn append_message(conversation_hash: &str, role: &str, content: &str) {
         "content": content,
         "timestamp": ts,
     });
-    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+    {
         let _ = writeln!(f, "{}", entry);
     }
 }

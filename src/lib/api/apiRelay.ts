@@ -28,8 +28,7 @@ export interface ApiRelayLog {
 
 export const apiRelayApi = {
   getInfo: () => invoke<ApiRelayInfo>("get_api_relay_info"),
-  regenerateKey: () =>
-    invoke<{ key: string }>("regenerate_api_relay_key"),
+  regenerateKey: () => invoke<{ key: string }>("regenerate_api_relay_key"),
   listLogs: (limit = 50, offset = 0) =>
     invoke<{ logs: ApiRelayLog[] }>("list_api_relay_logs", { limit, offset }),
   clearLogs: () => invoke<void>("clear_api_relay_logs"),

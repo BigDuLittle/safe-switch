@@ -461,10 +461,7 @@ impl Database {
                 .map(|c| c > 0)
                 .unwrap_or(false);
             if !has_col {
-                let _ = conn.execute(
-                    "ALTER TABLE desensitize_rules ADD COLUMN category TEXT",
-                    [],
-                );
+                let _ = conn.execute("ALTER TABLE desensitize_rules ADD COLUMN category TEXT", []);
             }
         }
 
@@ -539,7 +536,10 @@ impl Database {
 
         for col in ["context", "placeholder_context"] {
             let has_col: bool = conn
-                .prepare(&format!("SELECT COUNT(*) FROM pragma_table_info('desensitize_hit_log') WHERE name='{}'", col))
+                .prepare(&format!(
+                    "SELECT COUNT(*) FROM pragma_table_info('desensitize_hit_log') WHERE name='{}'",
+                    col
+                ))
                 .and_then(|mut st| st.query_row([], |r| r.get::<_, i64>(0)))
                 .map(|c| c > 0)
                 .unwrap_or(false);

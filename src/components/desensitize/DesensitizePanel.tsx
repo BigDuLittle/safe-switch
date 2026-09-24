@@ -54,12 +54,7 @@ function HighlightHit({ text, hit }: { text: string; hit: string }) {
     </span>
   );
 }
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -140,35 +135,50 @@ const typeColor: Record<string, string> = {
   cn_entry_permit:
     "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400",
   intl_ssn: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400",
-  cn_phone: "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
-  intl_phone: "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
-  cn_tel: "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
+  cn_phone:
+    "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
+  intl_phone:
+    "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
+  cn_tel:
+    "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
   email: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400",
-  bank_card: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
-  credit_card: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+  bank_card:
+    "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+  credit_card:
+    "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
   iban: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
-  intranet_ip: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
+  intranet_ip:
+    "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
   public_ip: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
   ipv6: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
   intranet_domain:
     "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400",
   mac: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
   db_uri: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
-  openai_key: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
-  anthropic_key: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
-  google_key: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
-  github_token: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
-  aws_key: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
+  openai_key:
+    "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
+  anthropic_key:
+    "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
+  google_key:
+    "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
+  github_token:
+    "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
+  aws_key:
+    "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
   jwt: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
-  private_key: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
-  other_token: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
+  private_key:
+    "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
+  other_token:
+    "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400",
   cn_plate: "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-400",
   name: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
   company: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
-  organization: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
+  organization:
+    "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
   position: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
   address: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
-  government: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
+  government:
+    "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
   mobile: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
   QQ: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
   vx: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
@@ -176,7 +186,8 @@ const typeColor: Record<string, string> = {
   movie: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
   game: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
   scene: "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400",
-  keyword: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400",
+  keyword:
+    "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400",
 };
 
 const sourceLabel: Record<string, string> = {
@@ -241,7 +252,9 @@ export default function DesensitizePanel() {
     folded: t("desensitize.variantFolded"),
   };
   const [dashboard, setDashboard] = useState<DesensitizeDashboard | null>(null);
-  const [ruleCategories, setRuleCategories] = useState<DesensitizeRuleCategory[]>([]);
+  const [ruleCategories, setRuleCategories] = useState<
+    DesensitizeRuleCategory[]
+  >([]);
   const [keywords, setKeywords] = useState<DesensitizeKeyword[]>([]);
   const [logs, setLogs] = useState<DesensitizeHitLog[]>([]);
   const [logKw, setLogKw] = useState("");
@@ -262,7 +275,6 @@ export default function DesensitizePanel() {
   const [mappingLoading, setMappingLoading] = useState(false);
   const [sessions, setSessions] = useState<string[]>([]);
 
-
   // 本地模型管理
   const [modelStatus, setModelStatus] = useState<DesensitizeModelStatus | null>(
     null,
@@ -277,7 +289,9 @@ export default function DesensitizePanel() {
   // 关键词表单
   const [kwInput, setKwInput] = useState("");
   const [kwMode, setKwMode] = useState("semantic");
-  const [kwVariants, setKwVariants] = useState<{ word: string; source: string }[]>([]);
+  const [kwVariants, setKwVariants] = useState<
+    { word: string; source: string }[]
+  >([]);
 
   // 输入关键词时实时展开内置算法待匹配词（防抖 250ms）
   useEffect(() => {
@@ -346,10 +360,11 @@ export default function DesensitizePanel() {
   const filteredLogs = useMemo(() => {
     const kw = logKw.trim().toLowerCase();
     const filtered = kw
-      ? logs.filter((l) =>
-          (l.original_masked || "").toLowerCase().includes(kw) ||
-          (l.context || "").toLowerCase().includes(kw) ||
-          (l.entity_type || "").toLowerCase().includes(kw)
+      ? logs.filter(
+          (l) =>
+            (l.original_masked || "").toLowerCase().includes(kw) ||
+            (l.context || "").toLowerCase().includes(kw) ||
+            (l.entity_type || "").toLowerCase().includes(kw),
         )
       : logs;
     const start = (logPage - 1) * PAGE_SIZE;
@@ -359,10 +374,11 @@ export default function DesensitizePanel() {
   const totalPages = useMemo(() => {
     const kw = logKw.trim().toLowerCase();
     const filtered = kw
-      ? logs.filter((l) =>
-          (l.original_masked || "").toLowerCase().includes(kw) ||
-          (l.context || "").toLowerCase().includes(kw) ||
-          (l.entity_type || "").toLowerCase().includes(kw)
+      ? logs.filter(
+          (l) =>
+            (l.original_masked || "").toLowerCase().includes(kw) ||
+            (l.context || "").toLowerCase().includes(kw) ||
+            (l.entity_type || "").toLowerCase().includes(kw),
         )
       : logs;
     return Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -431,17 +447,24 @@ export default function DesensitizePanel() {
     }
   };
 
-  const handleToggleKeywordSemantic = async (k: DesensitizeKeyword, next: boolean) => {
+  const handleToggleKeywordSemantic = async (
+    k: DesensitizeKeyword,
+    next: boolean,
+  ) => {
     const mode = next ? "semantic" : "literal";
     setKeywords((prev) =>
       prev.map((x) => (x.id === k.id ? { ...x, match_mode: mode } : x)),
     );
     try {
       await desensitizeApi.updateKeywordMode(k.id, mode);
-      toast.success(next ? t("desensitize.semanticOn") : t("desensitize.semanticOff"));
+      toast.success(
+        next ? t("desensitize.semanticOn") : t("desensitize.semanticOff"),
+      );
     } catch (err) {
       setKeywords((prev) =>
-        prev.map((x) => (x.id === k.id ? { ...x, match_mode: k.match_mode } : x)),
+        prev.map((x) =>
+          x.id === k.id ? { ...x, match_mode: k.match_mode } : x,
+        ),
       );
       toast.error(String(err));
     }
@@ -451,7 +474,9 @@ export default function DesensitizePanel() {
     try {
       await desensitizeApi.setEnabled(next);
       setEnabled(next);
-      toast.success(next ? t("desensitize.enabledOn") : t("desensitize.enabledOff"));
+      toast.success(
+        next ? t("desensitize.enabledOn") : t("desensitize.enabledOff"),
+      );
     } catch (err) {
       toast.error(String(err));
     }
@@ -482,7 +507,9 @@ export default function DesensitizePanel() {
       await desensitizeApi.setScope(next);
       setScope(next);
       toast.success(
-        next === "user" ? t("desensitize.scopeUserOn") : t("desensitize.scopeAllOn"),
+        next === "user"
+          ? t("desensitize.scopeUserOn")
+          : t("desensitize.scopeAllOn"),
       );
     } catch (err) {
       toast.error(String(err));
@@ -656,9 +683,7 @@ export default function DesensitizePanel() {
       <div className="flex-1 overflow-y-auto overflow-x-hidden pb-12 px-1">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-semibold">
-              {t("desensitize.title")}
-            </h2>
+            <h2 className="text-lg font-semibold">{t("desensitize.title")}</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               {t("desensitize.subtitle")}
             </p>
@@ -687,7 +712,9 @@ export default function DesensitizePanel() {
           }}
         >
           <TabsList>
-            <TabsTrigger value="overview">{t("desensitize.overview")}</TabsTrigger>
+            <TabsTrigger value="overview">
+              {t("desensitize.overview")}
+            </TabsTrigger>
             <TabsTrigger value="rules">{t("desensitize.rules")}</TabsTrigger>
             <TabsTrigger value="logs">{t("desensitize.logs")}</TabsTrigger>
             <TabsTrigger value="mappings">
@@ -712,7 +739,9 @@ export default function DesensitizePanel() {
                 icon={<CheckCircle2 className="w-4 h-4" />}
                 iconClass="bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-400"
                 label={t("desensitize.restoreRate")}
-                value={dashboard?.total_hits ? `${dashboard.restore_rate}%` : "--"}
+                value={
+                  dashboard?.total_hits ? `${dashboard.restore_rate}%` : "--"
+                }
                 sub={t("desensitize.totalHits", {
                   n: dashboard?.total_hits ?? 0,
                 })}
@@ -810,10 +839,7 @@ export default function DesensitizePanel() {
                             {fmtTime(h.created_at)}
                           </td>
                           <td className="py-2 pr-2">
-                            <Badge
-                              variant="secondary"
-                              className="font-normal"
-                            >
+                            <Badge variant="secondary" className="font-normal">
                               {h.direction === "out"
                                 ? t("desensitize.dirOut")
                                 : t("desensitize.dirIn")}
@@ -836,10 +862,7 @@ export default function DesensitizePanel() {
                             </Badge>
                           </td>
                           <td className="py-2">
-                            <Badge
-                              variant="secondary"
-                              className="font-normal"
-                            >
+                            <Badge variant="secondary" className="font-normal">
                               {sourceLabel[h.hit_source] ?? h.hit_source}
                             </Badge>
                           </td>
@@ -884,257 +907,256 @@ export default function DesensitizePanel() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-            {/* 策略① 内置 PII */}
-            <div className="rounded-xl border bg-card p-4">
-              <div className="flex items-start justify-between gap-3 mb-1">
-                <div>
-                  <h3 className="text-sm font-medium">
-                    {t("desensitize.strategy1")}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t("desensitize.strategy1Desc")}
-                  </p>
+              {/* 策略① 内置 PII */}
+              <div className="rounded-xl border bg-card p-4">
+                <div className="flex items-start justify-between gap-3 mb-1">
+                  <div>
+                    <h3 className="text-sm font-medium">
+                      {t("desensitize.strategy1")}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t("desensitize.strategy1Desc")}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={piiEnabled}
+                    onCheckedChange={handleTogglePii}
+                    aria-label={t("desensitize.strategy1")}
+                  />
                 </div>
-                <Switch
-                  checked={piiEnabled}
-                  onCheckedChange={handleTogglePii}
-                  aria-label={t("desensitize.strategy1")}
-                />
-              </div>
-              <div className="mt-3 space-y-2">
-                {ruleCategories.map((cat) => {
-                  const enabledCount = cat.rules.filter((r) => r.enabled).length;
-                  const open = !!openCats[cat.category];
-                  return (
-                    <Collapsible
-                      key={cat.category}
-                      open={open}
-                      onOpenChange={(o) =>
-                        setOpenCats((prev) => ({
-                          ...prev,
-                          [cat.category]: o,
-                        }))
-                      }
-                    >
-                      <CollapsibleTrigger className="w-full">
-                        <div className="flex items-center gap-2 rounded-lg border px-3 py-2.5 hover:bg-muted/40 transition-colors w-full">
-                          <ShieldCheck className="w-4 h-4 text-muted-foreground shrink-0" />
-                          <span className="text-sm">{cat.label}</span>
-                          <Badge variant="secondary" className="font-normal">
-                            {enabledCount}/{cat.count}{" "}
-                            {t("desensitize.on")}
-                          </Badge>
-                          <span className="ml-auto shrink-0 flex items-center gap-2">
-                            <ChevronDown
-                              className={cn(
-                                "w-4 h-4 text-muted-foreground transition-transform",
-                                open && "rotate-180",
-                              )}
-                            />
-                          </span>
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="pt-2 space-y-2">
-                        {cat.rules.map((r) => (
-                          <div
-                            key={r.entity_type}
-                            className="flex items-center gap-3 rounded-lg border px-3 py-2.5 ml-4"
-                          >
-                            <div className="min-w-0">
-                              <div className="text-sm">
-                                {r.name}
-                                <span className="ml-1.5 text-[11px] text-muted-foreground font-mono">
-                                  {r.entity_type}
-                                </span>
-                              </div>
-                              <div className="text-[11px] text-muted-foreground font-mono truncate">
-                                {r.pattern.length > 60
-                                  ? r.pattern.slice(0, 60) + "…"
-                                  : r.pattern}
-                              </div>
-                            </div>
+                <div className="mt-3 space-y-2">
+                  {ruleCategories.map((cat) => {
+                    const enabledCount = cat.rules.filter(
+                      (r) => r.enabled,
+                    ).length;
+                    const open = !!openCats[cat.category];
+                    return (
+                      <Collapsible
+                        key={cat.category}
+                        open={open}
+                        onOpenChange={(o) =>
+                          setOpenCats((prev) => ({
+                            ...prev,
+                            [cat.category]: o,
+                          }))
+                        }
+                      >
+                        <CollapsibleTrigger className="w-full">
+                          <div className="flex items-center gap-2 rounded-lg border px-3 py-2.5 hover:bg-muted/40 transition-colors w-full">
+                            <ShieldCheck className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <span className="text-sm">{cat.label}</span>
+                            <Badge variant="secondary" className="font-normal">
+                              {enabledCount}/{cat.count} {t("desensitize.on")}
+                            </Badge>
                             <span className="ml-auto shrink-0 flex items-center gap-2">
-                              <Badge
-                                variant={r.enabled ? "default" : "secondary"}
+                              <ChevronDown
                                 className={cn(
-                                  "font-normal",
-                                  r.enabled
-                                    ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400"
-                                    : "",
+                                  "w-4 h-4 text-muted-foreground transition-transform",
+                                  open && "rotate-180",
                                 )}
-                              >
-                                {r.enabled
-                                  ? t("desensitize.on")
-                                  : t("desensitize.off")}
-                              </Badge>
-                              <Switch
-                                checked={r.enabled}
-                                onCheckedChange={(next) =>
-                                  void handleToggleRule(r, next)
-                                }
-                                aria-label={r.name}
                               />
                             </span>
                           </div>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 策略② 自定义关键词 */}
-            <div className="rounded-xl border bg-card p-4">
-              <div className="mb-3 flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-sm font-medium">
-                    {t("desensitize.strategy2")}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t("desensitize.strategy2Desc")}
-                  </p>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="pt-2 space-y-2">
+                          {cat.rules.map((r) => (
+                            <div
+                              key={r.entity_type}
+                              className="flex items-center gap-3 rounded-lg border px-3 py-2.5 ml-4"
+                            >
+                              <div className="min-w-0">
+                                <div className="text-sm">
+                                  {r.name}
+                                  <span className="ml-1.5 text-[11px] text-muted-foreground font-mono">
+                                    {r.entity_type}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-muted-foreground font-mono truncate">
+                                  {r.pattern.length > 60
+                                    ? r.pattern.slice(0, 60) + "…"
+                                    : r.pattern}
+                                </div>
+                              </div>
+                              <span className="ml-auto shrink-0 flex items-center gap-2">
+                                <Badge
+                                  variant={r.enabled ? "default" : "secondary"}
+                                  className={cn(
+                                    "font-normal",
+                                    r.enabled
+                                      ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400"
+                                      : "",
+                                  )}
+                                >
+                                  {r.enabled
+                                    ? t("desensitize.on")
+                                    : t("desensitize.off")}
+                                </Badge>
+                                <Switch
+                                  checked={r.enabled}
+                                  onCheckedChange={(next) =>
+                                    void handleToggleRule(r, next)
+                                  }
+                                  aria-label={r.name}
+                                />
+                              </span>
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    );
+                  })}
                 </div>
-                <div className="flex gap-2 shrink-0 items-center">
-                  <Switch
-                    checked={keywordEnabled}
-                    onCheckedChange={handleToggleKeywordStrategy}
-                    aria-label={t("desensitize.strategy2")}
-                  />
-                  <div className="flex gap-2 shrink-0">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void handleExportTemplate()}
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    {t("desensitize.exportTemplate")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void handleImportTemplate()}
-                  >
-                    <Upload className="w-4 h-4 mr-1" />
-                    {t("desensitize.importTemplate")}
-                  </Button>
-                  </div>
-                </div>
               </div>
 
-              <div className="flex gap-2 mb-3">
-                <Input
-                  value={kwInput}
-                  onChange={(e) => setKwInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") void handleAddKeyword();
-                  }}
-                  placeholder={t("desensitize.keywordPlaceholder")}
-                  className="flex-1 min-w-0"
-                />
-                <Select value={kwMode} onValueChange={setKwMode}>
-                  <SelectTrigger className="w-[118px] shrink-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semantic">
-                      {t("desensitize.modeSemantic")}
-                    </SelectItem>
-                    <SelectItem value="literal">
-                      {t("desensitize.modeLiteral")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button size="sm" onClick={() => void handleAddKeyword()}>
-                  <Plus className="w-4 h-4 mr-1" />
-                  {t("desensitize.add")}
-                </Button>
-              </div>
-
-              {kwVariants.length > 0 && (
-                <div className="mb-3 rounded-lg bg-muted/40 px-3 py-2">
-                  <div className="text-[11px] text-muted-foreground mb-1.5">
-                    {t("desensitize.keywordVariantsTitle")}
+              {/* 策略② 自定义关键词 */}
+              <div className="rounded-xl border bg-card p-4">
+                <div className="mb-3 flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-medium">
+                      {t("desensitize.strategy2")}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t("desensitize.strategy2Desc")}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {kwVariants.map((v, i) => (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1 rounded-md border bg-background px-1.5 py-0.5 text-[11px]"
+                  <div className="flex gap-2 shrink-0 items-center">
+                    <Switch
+                      checked={keywordEnabled}
+                      onCheckedChange={handleToggleKeywordStrategy}
+                      aria-label={t("desensitize.strategy2")}
+                    />
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void handleExportTemplate()}
                       >
-                        <span className="font-mono">{v.word}</span>
-                        <span className="text-muted-foreground">
-                          ·{" "}
-                          {variantSourceLabel[v.source] ??
-                            t("desensitize.variantOther")}
+                        <Download className="w-4 h-4 mr-1" />
+                        {t("desensitize.exportTemplate")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void handleImportTemplate()}
+                      >
+                        <Upload className="w-4 h-4 mr-1" />
+                        {t("desensitize.importTemplate")}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mb-3">
+                  <Input
+                    value={kwInput}
+                    onChange={(e) => setKwInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void handleAddKeyword();
+                    }}
+                    placeholder={t("desensitize.keywordPlaceholder")}
+                    className="flex-1 min-w-0"
+                  />
+                  <Select value={kwMode} onValueChange={setKwMode}>
+                    <SelectTrigger className="w-[118px] shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="semantic">
+                        {t("desensitize.modeSemantic")}
+                      </SelectItem>
+                      <SelectItem value="literal">
+                        {t("desensitize.modeLiteral")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={() => void handleAddKeyword()}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    {t("desensitize.add")}
+                  </Button>
+                </div>
+
+                {kwVariants.length > 0 && (
+                  <div className="mb-3 rounded-lg bg-muted/40 px-3 py-2">
+                    <div className="text-[11px] text-muted-foreground mb-1.5">
+                      {t("desensitize.keywordVariantsTitle")}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {kwVariants.map((v, i) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center gap-1 rounded-md border bg-background px-1.5 py-0.5 text-[11px]"
+                        >
+                          <span className="font-mono">{v.word}</span>
+                          <span className="text-muted-foreground">
+                            ·{" "}
+                            {variantSourceLabel[v.source] ??
+                              t("desensitize.variantOther")}
+                          </span>
                         </span>
-                      </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {keywords.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-6 text-center">
+                    {t("desensitize.noKeywords")}
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {keywords.map((k) => (
+                      <div
+                        key={k.id}
+                        className="flex items-center gap-2 rounded-lg border px-3 py-2.5"
+                      >
+                        <EyeOff className="w-4 h-4 text-violet-500 shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-sm">
+                            {k.keyword}
+                            <span className="ml-1.5 text-[11px] text-muted-foreground font-mono">
+                              {k.entity_type}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {k.match_mode === "literal"
+                              ? t("desensitize.modeLiteral")
+                              : t("desensitize.modeSemantic")}
+                          </div>
+                        </div>
+                        <span className="ml-auto shrink-0 flex items-center gap-2">
+                          <span className="text-[11px] text-muted-foreground">
+                            {t("desensitize.semantic")}
+                          </span>
+                          <Switch
+                            checked={k.match_mode !== "literal"}
+                            onCheckedChange={(next) =>
+                              void handleToggleKeywordSemantic(k, next)
+                            }
+                            aria-label={k.keyword}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-7 h-7 text-muted-foreground hover:text-destructive shrink-0"
+                            onClick={() => void handleRemoveKeyword(k.id)}
+                            title={t("desensitize.remove")}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </Button>
+                        </span>
+                      </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
 
-              {keywords.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-6 text-center">
-                  {t("desensitize.noKeywords")}
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {keywords.map((k) => (
-                    <div
-                      key={k.id}
-                      className="flex items-center gap-2 rounded-lg border px-3 py-2.5"
-                    >
-                      <EyeOff className="w-4 h-4 text-violet-500 shrink-0" />
-                      <div className="min-w-0">
-                        <div className="text-sm">
-                          {k.keyword}
-                          <span className="ml-1.5 text-[11px] text-muted-foreground font-mono">
-                            {k.entity_type}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {k.match_mode === "literal"
-                            ? t("desensitize.modeLiteral")
-                            : t("desensitize.modeSemantic")}
-                        </div>
-                      </div>
-                      <span className="ml-auto shrink-0 flex items-center gap-2">
-                        <span className="text-[11px] text-muted-foreground">
-                          {t("desensitize.semantic")}
-                        </span>
-                        <Switch
-                          checked={k.match_mode !== "literal"}
-                          onCheckedChange={(next) =>
-                            void handleToggleKeywordSemantic(k, next)
-                          }
-                          aria-label={k.keyword}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="w-7 h-7 text-muted-foreground hover:text-destructive shrink-0"
-                          onClick={() => void handleRemoveKeyword(k.id)}
-                          title={t("desensitize.remove")}
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </Button>
-                      </span>
-                    </div>
-                  ))}
+                <div className="mt-3 rounded-lg bg-muted/50 px-3 py-2.5 text-[11px] text-muted-foreground leading-relaxed">
+                  <b className="text-foreground">
+                    {t("desensitize.semanticPrinciple")}
+                  </b>
+                  ：{t("desensitize.semanticDesc")}
                 </div>
-              )}
-
-              <div className="mt-3 rounded-lg bg-muted/50 px-3 py-2.5 text-[11px] text-muted-foreground leading-relaxed">
-                <b className="text-foreground">
-                  {t("desensitize.semanticPrinciple")}
-                </b>
-                ：{t("desensitize.semanticDesc")}
               </div>
-
             </div>
-            </div>
-
           </TabsContent>
 
           {/* ============ 日志 ============ */}
@@ -1145,7 +1167,10 @@ export default function DesensitizePanel() {
                   className="flex-1 h-8 rounded-md border bg-background px-2 text-xs"
                   placeholder="搜索被替换的词语..."
                   value={logKw}
-                  onChange={(e) => { setLogKw(e.target.value); setLogPage(1); }}
+                  onChange={(e) => {
+                    setLogKw(e.target.value);
+                    setLogPage(1);
+                  }}
                 />
               </div>
               <div className="overflow-x-auto">
@@ -1158,12 +1183,8 @@ export default function DesensitizePanel() {
                       <th className="py-2 pr-3 font-normal">
                         {t("desensitize.direction")}
                       </th>
-                      <th className="py-2 pr-3 font-normal">
-                        原文上下文
-                      </th>
-                      <th className="py-2 pr-3 font-normal">
-                        替换后上下文
-                      </th>
+                      <th className="py-2 pr-3 font-normal">原文上下文</th>
+                      <th className="py-2 pr-3 font-normal">替换后上下文</th>
                       <th className="py-2 pr-3 font-normal">
                         {t("desensitize.type")}
                       </th>
@@ -1182,10 +1203,7 @@ export default function DesensitizePanel() {
                           {fmtTime(l.created_at)}
                         </td>
                         <td className="py-2 pr-3">
-                          <Badge
-                            variant="secondary"
-                            className="font-normal"
-                          >
+                          <Badge variant="secondary" className="font-normal">
                             {l.direction === "out"
                               ? t("desensitize.dirOut")
                               : t("desensitize.dirIn")}
@@ -1251,10 +1269,24 @@ export default function DesensitizePanel() {
               </div>
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-3 text-xs">
-                  <span className="text-muted-foreground">第 {logPage} / {totalPages} 页 · 共 {filteredLogs.length} 条</span>
+                  <span className="text-muted-foreground">
+                    第 {logPage} / {totalPages} 页 · 共 {filteredLogs.length} 条
+                  </span>
                   <div className="flex gap-1">
-                    <button className="h-7 px-2 rounded border disabled:opacity-40" disabled={logPage <= 1} onClick={() => setLogPage(logPage - 1)}>上一页</button>
-                    <button className="h-7 px-2 rounded border disabled:opacity-40" disabled={logPage >= totalPages} onClick={() => setLogPage(logPage + 1)}>下一页</button>
+                    <button
+                      className="h-7 px-2 rounded border disabled:opacity-40"
+                      disabled={logPage <= 1}
+                      onClick={() => setLogPage(logPage - 1)}
+                    >
+                      上一页
+                    </button>
+                    <button
+                      className="h-7 px-2 rounded border disabled:opacity-40"
+                      disabled={logPage >= totalPages}
+                      onClick={() => setLogPage(logPage + 1)}
+                    >
+                      下一页
+                    </button>
                   </div>
                 </div>
               )}
@@ -1489,7 +1521,9 @@ export default function DesensitizePanel() {
                   {t("desensitize.modelStatusShort")}
                 </div>
                 <Badge
-                  variant={modelStatus?.embedding.ready ? "default" : "destructive"}
+                  variant={
+                    modelStatus?.embedding.ready ? "default" : "destructive"
+                  }
                   className={cn(
                     "font-normal",
                     modelStatus?.embedding.ready
@@ -1664,8 +1698,6 @@ export default function DesensitizePanel() {
               </div>
             </div>
           </TabsContent>
-
-
         </Tabs>
       </div>
 
@@ -1702,7 +1734,9 @@ export default function DesensitizePanel() {
                   onClick={() => void handlePreview()}
                   disabled={sbLoading}
                 >
-                  {sbLoading && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
+                  {sbLoading && (
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  )}
                   {t("desensitize.previewRun")}
                 </Button>
                 <Button
