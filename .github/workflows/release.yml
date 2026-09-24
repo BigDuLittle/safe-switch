@@ -6,9 +6,13 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Tag to release (e.g. v3.20.4)'
+      version:
+        description: '版本号 (例如 3.20.4)'
         required: true
+        default: '3.20.4'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -16,6 +20,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Create and push tag
+        if: startsWith(github.ref, 'refs/tags/') == false
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,8 +64,6 @@ jobs:
             Invoke-WebRequest -Uri "$base/$f" -OutFile "$modelDir/$f"
           }
           '{"use_pytorch_mha":true}' | Out-File -Encoding utf8 "$modelDir/ort_config.json"
-          Write-Host "Model downloaded:"
-          Get-ChildItem $modelDir | Format-Table Name, Length
 
       - name: Build
         env:
@@ -64,6 +74,7 @@ jobs:
       - name: Upload release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ inputs.version || github.ref_name }}
           files: |
             src-tauri/target/release/bundle/nsis/*
             src-tauri/target/release/bundle/latest.json
