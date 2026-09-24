@@ -153,6 +153,10 @@ pub async fn get_config_status(
                 path,
             })
         }
+        AppType::ApiRelay => Ok(ConfigStatus {
+            exists: true,
+            path: String::new(),
+        }),
     }
 }
 
@@ -179,6 +183,10 @@ pub async fn get_config_dir(app: String) -> Result<String, String> {
             .parent()
             .unwrap()
             .to_path_buf(),
+        AppType::ApiRelay => {
+            let home = crate::config::get_home_dir();
+            home.join(".cc-switch").join("api-relay")
+        }
     };
 
     Ok(dir.to_string_lossy().to_string())
@@ -202,6 +210,10 @@ pub async fn open_config_folder(handle: AppHandle, app: String) -> Result<bool, 
             .parent()
             .unwrap()
             .to_path_buf(),
+        AppType::ApiRelay => {
+            let home = crate::config::get_home_dir();
+            home.join(".cc-switch").join("api-relay")
+        }
     };
 
     if !config_dir.exists() {

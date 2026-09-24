@@ -23,6 +23,7 @@ import {
   FolderOpen,
   KeyRound,
   Shield,
+  ShieldCheck,
   Cpu,
   LayoutDashboard,
   Loader2,
@@ -76,6 +77,9 @@ import { ClaudeDesktopRouteToggle } from "@/components/proxy/ClaudeDesktopRouteT
 import { FailoverToggle } from "@/components/proxy/FailoverToggle";
 import { RoutingActivationBrand } from "@/components/proxy/RoutingActivationBrand";
 import UsageScriptModal from "@/components/UsageScriptModal";
+import DesensitizePanel from "@/components/desensitize/DesensitizePanel";
+import { ApiRelayPanel } from "@/components/apiRelay/ApiRelayPanel";
+import { DesensitizeToggle } from "@/components/desensitize/DesensitizeToggle";
 import UnifiedMcpPanel from "@/components/mcp/UnifiedMcpPanel";
 import PromptPanel, {
   type PromptPanelHandle,
@@ -127,7 +131,8 @@ type View =
   | "openclawEnv"
   | "openclawTools"
   | "openclawAgents"
-  | "hermesMemory";
+  | "hermesMemory"
+  | "desensitize";
 
 interface SyncStatusUpdatedPayload {
   source?: string;
@@ -240,7 +245,8 @@ function App() {
       sharedFeatureApp !== "gemini" &&
       sharedFeatureApp !== "hermes" &&
       sharedFeatureApp !== "pi" &&
-      sharedFeatureApp !== "mcode"
+      sharedFeatureApp !== "mcode" &&
+      sharedFeatureApp !== "api-relay"
     ) {
       setCurrentView("providers");
     }
@@ -334,7 +340,8 @@ function App() {
     sharedFeatureApp === "gemini" ||
     sharedFeatureApp === "hermes" ||
     sharedFeatureApp === "pi" ||
-    sharedFeatureApp === "mcode";
+    sharedFeatureApp === "mcode" ||
+    sharedFeatureApp === "api-relay";
   const hasMcpSupport = sharedFeatureApp !== "pi";
 
   const {
@@ -1108,11 +1115,56 @@ function App() {
           return <EnvPanel />;
         case "openclawTools":
           return <ToolsPanel />;
-        case "openclawAgents":
-          return <AgentsDefaultsPanel />;
+        case "desensitize":
+          return <DesensitizePanel />;
         default:
-          return (
-            <div className="px-6 flex flex-col flex-1 min-h-0 overflow-hidden">
+          if (activeApp === "api-relay") {
+            return (
+              <div className="px-6 flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden pb-12 px-1">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeApp}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="space-y-4"
+                    >
+                      <ApiRelayPanel />
+                      <ProviderList
+                        providers={providers}
+                        currentProviderId={currentProviderId}
+                        appId={activeApp}
+                        isLoading={isLoading}
+                        isProxyRunning={currentAppUsesProxy && isProxyRunning}
+                        isProxyTakeover={
+                          isProxyRunning && isCurrentAppTakeoverActive
+                        }
+                        activeProviderId={activeProviderId}
+                        onSwitch={switchProvider}
+                        onEdit={(provider) => {
+                          setEditingProvider(provider);
+                        }}
+                        onDelete={(provider) =>
+                          setConfirmAction({ provider, action: "delete" })
+                        }
+                        onRemoveFromConfig={(provider) =>
+                          setConfirmAction({ provider, action: "remove" })
+                        }
+                        onDuplicate={handleDuplicateProvider}
+                        onConfigureUsage={setUsageProvider}
+                        onOpenWebsite={handleOpenWebsite}
+                        onCreate={() => setIsAddOpen(true)}
+                        onSetAsDefault={switchProvider}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </div>
+            );
+          }
+          return (            <div className="px-6 flex flex-col flex-1 min-h-0 overflow-hidden">
               <div
                 ref={providerScrollContainerRef}
                 className="flex-1 overflow-y-auto overflow-x-hidden pb-12 px-1"
@@ -1357,6 +1409,7 @@ function App() {
                     proxyStatus !== undefined && takeoverStatus !== undefined
                   }
                 />
+                <DesensitizeToggle onOpenSettings={() => setCurrentView("desensitize")} />
                 <Button
                   variant="ghost"
                   size="icon"

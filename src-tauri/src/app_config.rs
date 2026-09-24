@@ -37,6 +37,7 @@ impl McpApps {
             AppType::Mcode => self.mcode,
             AppType::Pi => false, // Pi core has no native MCP registry.
             AppType::ClaudeDesktop => false,
+            AppType::ApiRelay => false,
         }
     }
 
@@ -52,7 +53,8 @@ impl McpApps {
             AppType::Hermes => self.hermes = enabled,
             AppType::Mcode => self.mcode = enabled,
             AppType::Pi => {}            // Pi core has no native MCP registry.
-            AppType::ClaudeDesktop => {} // Claude Desktop 3P provider config doesn't support MCP here
+            AppType::ClaudeDesktop => {}
+            AppType::ApiRelay => {} // Claude Desktop 3P provider config doesn't support MCP here
         }
     }
 
@@ -130,6 +132,7 @@ impl SkillApps {
             AppType::Mcode => self.mcode,
             AppType::OpenClaw => false, // OpenClaw doesn't support Skills
             AppType::ClaudeDesktop => false,
+            AppType::ApiRelay => false,
         }
     }
 
@@ -145,7 +148,8 @@ impl SkillApps {
             AppType::Pi => self.pi = enabled,
             AppType::Mcode => self.mcode = enabled,
             AppType::OpenClaw => {} // OpenClaw doesn't support Skills, ignore
-            AppType::ClaudeDesktop => {} // Claude Desktop 3P profiles don't use CC Switch skill sync
+            AppType::ClaudeDesktop => {}
+            AppType::ApiRelay => {} // Claude Desktop 3P profiles don't use CC Switch skill sync
         }
     }
 
@@ -409,6 +413,8 @@ pub enum AppType {
     Hermes,
     Pi,
     Mcode,
+    #[serde(rename = "api-relay", alias = "api_relay", alias = "apirelay")]
+    ApiRelay,
 }
 
 impl AppType {
@@ -424,6 +430,7 @@ impl AppType {
             AppType::Hermes => "hermes",
             AppType::Pi => "pi",
             AppType::Mcode => "mcode",
+            AppType::ApiRelay => "api-relay",
         }
     }
 
@@ -435,7 +442,7 @@ impl AppType {
     pub fn is_additive_mode(&self) -> bool {
         matches!(
             self,
-            AppType::OpenCode | AppType::OpenClaw | AppType::Hermes | AppType::Pi | AppType::Mcode
+            AppType::OpenCode | AppType::OpenClaw | AppType::Hermes | AppType::Pi | AppType::Mcode | AppType::ApiRelay
         )
     }
 
@@ -480,6 +487,7 @@ impl FromStr for AppType {
             "hermes" => Ok(AppType::Hermes),
             "pi" => Ok(AppType::Pi),
             "mcode" => Ok(AppType::Mcode),
+            "api-relay" | "api_relay" | "apirelay" => Ok(AppType::ApiRelay),
             other => Err(AppError::localized(
                 "unsupported_app",
                 format!("不支持的应用标识: '{other}'。可选值: claude, claude-desktop, codex, gemini, grokbuild, opencode, openclaw, hermes, pi。"),
@@ -517,13 +525,14 @@ impl CommonConfigSnippets {
         match app {
             AppType::Claude => self.claude.as_ref(),
             AppType::ClaudeDesktop => None,
+            AppType::ApiRelay => None,
             AppType::Codex => self.codex.as_ref(),
             AppType::Gemini => self.gemini.as_ref(),
             AppType::GrokBuild => None,
             AppType::OpenCode => self.opencode.as_ref(),
             AppType::OpenClaw => self.openclaw.as_ref(),
             AppType::Hermes => self.hermes.as_ref(),
-            AppType::Pi | AppType::Mcode => None,
+            AppType::Pi | AppType::Mcode | AppType::ApiRelay => None,
         }
     }
 
@@ -532,13 +541,14 @@ impl CommonConfigSnippets {
         match app {
             AppType::Claude => self.claude = snippet,
             AppType::ClaudeDesktop => {}
+            AppType::ApiRelay => {}
             AppType::Codex => self.codex = snippet,
             AppType::Gemini => self.gemini = snippet,
             AppType::GrokBuild => {}
             AppType::OpenCode => self.opencode = snippet,
             AppType::OpenClaw => self.openclaw = snippet,
             AppType::Hermes => self.hermes = snippet,
-            AppType::Pi | AppType::Mcode => {}
+            AppType::Pi | AppType::Mcode | AppType::ApiRelay => {}
         }
     }
 }
@@ -864,7 +874,7 @@ impl MultiAppConfig {
             AppType::Hermes => &mut config.prompts.hermes.prompts,
             // Pi was added after prompts moved to SQLite. Keeping it out of
             // this legacy config avoids a second, unused prompt state.
-            AppType::Pi | AppType::Mcode => return Ok(false),
+            AppType::Pi | AppType::Mcode | AppType::ApiRelay => return Ok(false),
         };
 
         prompts.insert(id, prompt);
@@ -908,7 +918,7 @@ impl MultiAppConfig {
                 AppType::OpenCode => &self.mcp.opencode.servers,
                 AppType::OpenClaw => continue, // OpenClaw MCP is still in development, skip
                 AppType::Hermes => continue,   // Hermes didn't exist in v3.6.x, skip
-                AppType::Pi | AppType::Mcode => continue, // Pi didn't exist in v3.6.x, skip
+                AppType::Pi | AppType::Mcode | AppType::ApiRelay => continue, // Pi didn't exist in v3.6.x, skip
             };
 
             for (id, entry) in old_servers {

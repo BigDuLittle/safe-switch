@@ -38,6 +38,7 @@ pub fn prompt_file_path(app: &AppType) -> Result<PathBuf, AppError> {
         AppType::Pi => crate::pi_config::get_pi_agent_dir()?,
         AppType::Mcode => crate::mcode_config::data_dir(),
         AppType::ClaudeDesktop => unreachable!("handled above"),
+        AppType::ApiRelay => unreachable!("not supported"),
     };
 
     let filename = match app {
@@ -46,7 +47,7 @@ pub fn prompt_file_path(app: &AppType) -> Result<PathBuf, AppError> {
         AppType::Gemini => "GEMINI.md",
         AppType::GrokBuild | AppType::OpenCode | AppType::OpenClaw => "AGENTS.md",
         AppType::Hermes => "SOUL.md",
-        AppType::Pi | AppType::Mcode => "AGENTS.md",
+        AppType::Pi | AppType::Mcode | AppType::ApiRelay => "AGENTS.md",
         AppType::ClaudeDesktop => unreachable!("handled above"),
     };
 

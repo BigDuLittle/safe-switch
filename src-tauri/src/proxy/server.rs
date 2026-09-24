@@ -398,6 +398,9 @@ impl ProxyServer {
             .route("/gemini/v1beta/*path", any(handlers::handle_gemini))
             // Gemini 的 GA 版本也叫 /v1，给原 SDK 留一条出口
             .route("/gemini/v1/*path", any(handlers::handle_gemini))
+            // API 中转（独立前缀 /vault/v1，OpenAI 兼容端点）
+            .route("/vault/v1/chat/completions", post(super::relay::handle_relay_chat_completions))
+            .route("/vault/v1/models", get(super::relay::handle_relay_models))
             // 提高默认请求体大小限制（避免 413 Payload Too Large）
             .layer(DefaultBodyLimit::max(200 * 1024 * 1024))
             .with_state(self.state.clone())

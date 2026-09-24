@@ -162,6 +162,11 @@ pub(crate) fn build_provider_from_request(
                 "Pi providers must be added from the Pi provider page".to_string(),
             ));
         }
+        AppType::ApiRelay => {
+            return Err(AppError::InvalidInput(
+                "Add API Relay providers from the API Relay page".to_string(),
+            ));
+        }
     };
 
     // Build usage script configuration if provided

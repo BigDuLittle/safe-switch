@@ -432,6 +432,125 @@ impl Database {
             [],
         );
 
+        // [desensitize] 脱敏映射引擎数据表（IF NOT EXISTS，老库启动自动建表）
+        Self::create_desensitize_tables_on_conn(conn)?;
+
+        Ok(())
+    }
+
+    /// [desensitize] 创建脱敏映射引擎相关表
+    pub(crate) fn create_desensitize_tables_on_conn(conn: &Connection) -> Result<(), AppError> {
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS desensitize_rules (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rule_type TEXT NOT NULL DEFAULT 'builtin',
+                name TEXT NOT NULL,
+                pattern TEXT,
+                entity_type TEXT NOT NULL,
+                category TEXT,
+                enabled INTEGER NOT NULL DEFAULT 1
+            )",
+            [],
+        )
+        .map_err(|e| AppError::Database(e.to_string()))?;
+
+        {
+            let has_col: bool = conn
+                .prepare("SELECT COUNT(*) FROM pragma_table_info('desensitize_rules') WHERE name='category'")
+                .and_then(|mut st| st.query_row([], |r| r.get::<_, i64>(0)))
+                .map(|c| c > 0)
+                .unwrap_or(false);
+            if !has_col {
+                let _ = conn.execute(
+                    "ALTER TABLE desensitize_rules ADD COLUMN category TEXT",
+                    [],
+                );
+            }
+        }
+
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS desensitize_keywords (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                keyword TEXT NOT NULL,
+                entity_type TEXT NOT NULL DEFAULT 'keyword',
+                match_mode TEXT NOT NULL DEFAULT 'semantic',
+                threshold REAL NOT NULL DEFAULT 0.82,
+                enabled INTEGER NOT NULL DEFAULT 1
+            )",
+            [],
+        )
+        .map_err(|e| AppError::Database(e.to_string()))?;
+
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS desensitize_mapping (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_key TEXT NOT NULL,
+                placeholder TEXT NOT NULL UNIQUE,
+                original TEXT NOT NULL,
+                entity_type TEXT NOT NULL,
+                hit_source TEXT NOT NULL,
+                confidence REAL NOT NULL DEFAULT 1.0,
+                created_at INTEGER NOT NULL DEFAULT (unixepoch())
+            )",
+            [],
+        )
+        .map_err(|e| AppError::Database(e.to_string()))?;
+
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_desensitize_mapping_session
+             ON desensitize_mapping(session_key, original)",
+            [],
+        )
+        .map_err(|e| AppError::Database(e.to_string()))?;
+
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS api_relay_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at INTEGER NOT NULL,
+                model TEXT,
+                provider TEXT,
+                request_summary TEXT,
+                response_summary TEXT,
+                status INTEGER,
+                latency_ms INTEGER
+            )",
+            [],
+        )
+        .map_err(|e| AppError::Database(e.to_string()))?;
+
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS desensitize_hit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_key TEXT NOT NULL,
+                direction TEXT NOT NULL DEFAULT 'in',
+                original_masked TEXT NOT NULL,
+                placeholder TEXT,
+                entity_type TEXT NOT NULL,
+                hit_source TEXT NOT NULL,
+                confidence REAL NOT NULL DEFAULT 1.0,
+                restored INTEGER NOT NULL DEFAULT 1,
+                context TEXT,
+                placeholder_context TEXT,
+                created_at INTEGER NOT NULL DEFAULT (unixepoch())
+            )",
+            [],
+        )
+        .map_err(|e| AppError::Database(e.to_string()))?;
+
+        for col in ["context", "placeholder_context"] {
+            let has_col: bool = conn
+                .prepare(&format!("SELECT COUNT(*) FROM pragma_table_info('desensitize_hit_log') WHERE name='{}'", col))
+                .and_then(|mut st| st.query_row([], |r| r.get::<_, i64>(0)))
+                .map(|c| c > 0)
+                .unwrap_or(false);
+            if !has_col {
+                let _ = conn.execute(
+                    &format!("ALTER TABLE desensitize_hit_log ADD COLUMN {} TEXT", col),
+                    [],
+                );
+            }
+        }
+
         Ok(())
     }
 

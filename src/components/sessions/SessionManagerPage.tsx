@@ -92,7 +92,8 @@ type ProviderFilter =
   | "gemini"
   | "hermes"
   | "pi"
-  | "mcode";
+  | "mcode"
+  | "relay";
 
 type SessionListViewMode = "flat" | "grouped";
 
@@ -237,7 +238,9 @@ export function SessionManagerPage({ appId }: { appId: string }) {
   >(() => initialGroupExpansionState.expandedDirectoryKeys);
 
   useEffect(() => {
-    setProviderFilter(appId as ProviderFilter);
+    // api-relay 的 provider_id 是 "relay"
+    const mapped = appId === "api-relay" ? "relay" : appId;
+    setProviderFilter(mapped as ProviderFilter);
   }, [appId]);
 
   // 使用 FlexSearch 全文搜索

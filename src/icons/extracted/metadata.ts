@@ -782,6 +782,12 @@ export const iconMetadata: Record<string, IconMetadata> = {
     keywords: ["xycai", "xyc", "aggregator", "relay", "gateway", "token"],
     defaultColor: "#1E88E5",
   },
+  vault: {
+    name: "vault",
+    displayName: "Vault",
+    category: "utility",
+    keywords: ["vault", "api relay", "gateway", "security", "local", "proxy"],
+  },
 };
 
 export function getIconMetadata(name: string): IconMetadata | undefined {

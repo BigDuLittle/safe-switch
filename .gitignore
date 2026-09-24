@@ -29,3 +29,12 @@ copilot-api
 .history
 CODEBUDDY.md
 mainWindow.js
+
+# Local build scripts (machine-specific)
+build.ps1
+run.ps1
+
+
+# Debug probe example
+src-tauri/examples/
+

@@ -299,6 +299,7 @@ export interface VisibleApps {
   hermes: boolean;
   pi: boolean;
   mcode: boolean;
+  "api-relay": boolean;
 }
 
 // WebDAV 同步状态

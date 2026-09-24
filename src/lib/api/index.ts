@@ -1,4 +1,5 @@
 export type { AppId } from "./types";
+export { apiRelayApi } from "./apiRelay";
 export { piApi } from "./pi";
 export { providersApi, universalProvidersApi } from "./providers";
 export { settingsApi } from "./settings";
