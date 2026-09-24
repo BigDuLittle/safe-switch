@@ -38,3 +38,12 @@ run.ps1
 # Debug probe example
 src-tauri/examples/
 
+
+# Model resources (bundled at build time, not in git)
+src-tauri/resources/models/
+
+
+key.txt
+build.ps1
+run.ps1
+src-tauri/examples/

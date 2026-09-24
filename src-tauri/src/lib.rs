@@ -512,6 +512,37 @@ pub fn run() {
             // 让 Store 损坏或路径无效等启动警告能够真正落盘。
             let _ = app_store::refresh_app_config_dir_override(app.handle());
 
+            // 首次启动：从 bundle 资源复制离线模型到数据目录
+            // 后续更新包不会覆盖数据目录中的模型
+            if let Ok(res_dir) = app.path().resource_dir() {
+                let src_model = res_dir.join("models").join("bge-small-zh-v1.5");
+                if src_model.join("model.safetensors").exists() {
+                    let home = crate::config::get_home_dir();
+                    let dst_model = home
+                        .join(".cc-switch")
+                        .join("models")
+                        .join("bge-small-zh-v1.5");
+                    if !dst_model.join("model.safetensors").exists() {
+                        log::info!("首次启动，复制离线模型到 {}", dst_model.display());
+                        if let Err(e) = std::fs::create_dir_all(&dst_model) {
+                            log::warn!("创建模型目录失败: {e}");
+                        } else {
+                            for entry in std::fs::read_dir(&src_model).into_iter().flatten().flatten() {
+                                let src = entry.path();
+                                if src.is_file() {
+                                    let name = entry.file_name();
+                                    let dst = dst_model.join(&name);
+                                    if let Err(e) = std::fs::copy(&src, &dst) {
+                                        log::warn!("复制模型文件 {} 失败: {}", name.to_string_lossy(), e);
+                                    }
+                                }
+                            }
+                            log::info!("离线模型复制完成");
+                        }
+                    }
+                }
+            }
+
             #[cfg(target_os = "windows")]
             set_windows_app_user_model_id(app.handle());
 
