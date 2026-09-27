@@ -199,7 +199,9 @@ pub fn restore_text(db: &Database, text: &str) -> (String, usize, usize) {
     );
     let re = regex::Regex::new(&body).unwrap();
     // 非 Result 函数：直接用锁（poison 时取内部值，仅 SQLite 操作，安全）
-    let conn = db.conn.lock().unwrap_or_else(|e| e.into_inner());
+    // 注意：不能在整个循环期间持有锁——循环内会调用 log_hit(db, ...)，
+    // 而 log_hit 内部会对同一个 Mutex 再次加锁（std Mutex 不可重入 → 死锁）。
+    // 因此每条命中单独临时加锁查询，用完立即释放。
     let mut restored = 0usize;
     let mut failed = 0usize;
     // 手动扫描占位符并查表还原（避免 Replacer 闭包生命周期约束）
@@ -209,16 +211,19 @@ pub fn restore_text(db: &Database, text: &str) -> (String, usize, usize) {
         let m = caps.get(0).expect("capture 0 always present");
         out.push_str(&text[last..m.start()]);
         let ph = &caps[0];
-        let row = conn.query_row(
-            "SELECT original, entity_type, hit_source, confidence FROM desensitize_mapping WHERE placeholder = ?1",
-            [ph],
-            |r| Ok((
-                r.get::<_, String>(0)?,
-                r.get::<_, String>(1)?,
-                r.get::<_, String>(2)?,
-                r.get::<_, f64>(3)?,
-            )),
-        );
+        let row = {
+            let conn = db.conn.lock().unwrap_or_else(|e| e.into_inner());
+            conn.query_row(
+                "SELECT original, entity_type, hit_source, confidence FROM desensitize_mapping WHERE placeholder = ?1",
+                [ph],
+                |r| Ok((
+                    r.get::<_, String>(0)?,
+                    r.get::<_, String>(1)?,
+                    r.get::<_, String>(2)?,
+                    r.get::<_, f64>(3)?,
+                )),
+            )
+        };
         match row {
             Ok((orig, et, src, conf)) => {
                 restored += 1;
