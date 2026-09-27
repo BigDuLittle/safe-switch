@@ -69,6 +69,30 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm tauri build
 
+      - name: Generate latest.json
+        shell: pwsh
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          $sigFiles = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.sig"
+          if (-not $sigFiles) { throw "No .sig file found" }
+          $sigFile = $sigFiles | Select-Object -First 1
+          $signature = (Get-Content $sigFile.FullName -Raw).Trim()
+          $exeName = [IO.Path]::GetFileNameWithoutExtension($sigFile.Name) + ".exe"
+          $url = "https://github.com/BigDuLittle/safe-switch/releases/download/v$version/$exeName"
+          $json = @{
+            version = $version
+            notes = "Safe Switch v$version"
+            pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            platforms = @{
+              "windows-x86_64" = @{
+                signature = $signature
+                url = $url
+              }
+            }
+          } | ConvertTo-Json -Depth 5
+          [IO.File]::WriteAllText("src-tauri/target/release/bundle/latest.json", $json, (New-Object Text.UTF8Encoding $false))
+          Write-Host "latest.json generated for v$version"
+
       - name: Upload release
         uses: softprops/action-gh-release@v2
         with:
