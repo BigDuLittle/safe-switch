@@ -73,11 +73,13 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
-          $sigFiles = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.sig"
-          if (-not $sigFiles) { throw "No .sig file found" }
-          $sigFile = $sigFiles | Select-Object -First 1
+          $exeFile = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.exe" | Select-Object -First 1
+          if (-not $exeFile) { throw "No .exe found in nsis bundle" }
+          $sigFile = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.exe.sig" | Select-Object -First 1
+          if (-not $sigFile) { throw "No .sig file found" }
           $signature = (Get-Content $sigFile.FullName -Raw).Trim()
-          $exeName = [IO.Path]::GetFileNameWithoutExtension($sigFile.Name) + ".exe"
+          # GitHub release asset names replace spaces with dots
+          $exeName = $exeFile.Name -replace ' ', '.'
           $url = "https://github.com/BigDuLittle/safe-switch/releases/download/v$version/$exeName"
           $json = @{
             version = $version
@@ -91,7 +93,7 @@ jobs:
             }
           } | ConvertTo-Json -Depth 5
           [IO.File]::WriteAllText("src-tauri/target/release/bundle/latest.json", $json, (New-Object Text.UTF8Encoding $false))
-          Write-Host "latest.json generated for v$version"
+          Write-Host "latest.json generated: $url"
 
       - name: Upload release
         uses: softprops/action-gh-release@v2
