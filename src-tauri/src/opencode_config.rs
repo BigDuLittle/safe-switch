@@ -160,7 +160,7 @@ pub fn set_provider(id: &str, config: Value) -> Result<(), AppError> {
     let mut full_config = read_opencode_config_from_path(&path)?;
 
     // 判空要连「存在但不是对象」一起算：否则下面 as_object_mut 拿不到，
-    // 写入会静默失效——界面显示添加成功而文件里没有。provider 段是 cc-switch
+    // 写入会静默失效——界面显示添加成功而文件里没有。provider 段是 safe-switch
     // 的投影区，归一化不会碰用户自有的 model / theme 等顶层配置。
     if !full_config.get("provider").is_some_and(Value::is_object) {
         if full_config.get("provider").is_some() {
@@ -356,16 +356,16 @@ mod tests {
     struct TestHomeGuard(Option<std::ffi::OsString>);
     impl TestHomeGuard {
         fn set(home: &std::path::Path) -> Self {
-            let guard = Self(std::env::var_os("CC_SWITCH_TEST_HOME"));
-            std::env::set_var("CC_SWITCH_TEST_HOME", home);
+            let guard = Self(std::env::var_os("SAFE_SWITCH_TEST_HOME"));
+            std::env::set_var("SAFE_SWITCH_TEST_HOME", home);
             guard
         }
     }
     impl Drop for TestHomeGuard {
         fn drop(&mut self) {
             match self.0.take() {
-                Some(value) => std::env::set_var("CC_SWITCH_TEST_HOME", value),
-                None => std::env::remove_var("CC_SWITCH_TEST_HOME"),
+                Some(value) => std::env::set_var("SAFE_SWITCH_TEST_HOME", value),
+                None => std::env::remove_var("SAFE_SWITCH_TEST_HOME"),
             }
         }
     }

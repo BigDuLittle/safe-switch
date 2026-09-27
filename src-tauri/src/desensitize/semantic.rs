@@ -6,7 +6,7 @@
 //!   candle 纯 Rust CPU 推理）粗筛候选句，再句内细定位最相似片段，
 //!   只替换该片段（宁漏勿错，不吞无关上下文）
 //!
-//! 模型文件独立存放于 `<data_dir>/.cc-switch/models/bge-small-zh-v1.5/`，
+//! 模型文件独立存放于 `<data_dir>/.safe-switch/models/bge-small-zh-v1.5/`，
 //! 不打包进 exe；模型缺失或加载失败时语义通道自动降级为仅字面匹配。
 #![allow(
     clippy::all,
@@ -285,7 +285,7 @@ pub fn model_status() -> serde_json::Value {
     use serde_json::json;
     let home = crate::config::get_home_dir();
     let dir = home
-        .join(".cc-switch")
+        .join(".safe-switch")
         .join("models")
         .join("bge-small-zh-v1.5");
     let mp = dir.join("model.safetensors");
@@ -311,7 +311,7 @@ impl EmbedModel {
     fn load() -> Result<Self, String> {
         let home = crate::config::get_home_dir();
         let dir = home
-            .join(".cc-switch")
+            .join(".safe-switch")
             .join("models")
             .join("bge-small-zh-v1.5");
         let model_path = dir.join("model.safetensors");

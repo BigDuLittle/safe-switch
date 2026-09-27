@@ -185,7 +185,7 @@ pub async fn get_config_dir(app: String) -> Result<String, String> {
             .to_path_buf(),
         AppType::ApiRelay => {
             let home = crate::config::get_home_dir();
-            home.join(".cc-switch").join("api-relay")
+            home.join(".safe-switch").join("api-relay")
         }
     };
 
@@ -212,7 +212,7 @@ pub async fn open_config_folder(handle: AppHandle, app: String) -> Result<bool, 
             .to_path_buf(),
         AppType::ApiRelay => {
             let home = crate::config::get_home_dir();
-            home.join(".cc-switch").join("api-relay")
+            home.join(".safe-switch").join("api-relay")
         }
     };
 

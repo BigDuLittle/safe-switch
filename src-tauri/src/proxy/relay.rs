@@ -2,7 +2,7 @@
 //!
 //! 为第三方 AI 工具提供 OpenAI 兼容的本地中转端点：
 //! 第三方工具把 baseURL 指向 `http://127.0.0.1:{port}/vault/v1` 并填入本模块生成的
-//! 本地 Key，请求经 CC Switch 校验后透传到用户配置的中转上游（upstream），
+//! 本地 Key，请求经 Safe Switch 校验后透传到用户配置的中转上游（upstream），
 //! 响应（含 SSE 流式）原样透传回第三方工具。
 //!
 //! 配置项（settings 表）：
@@ -75,7 +75,7 @@ fn validate_local_key(db: &Database, headers: &HeaderMap) -> Result<(), ProxyErr
     let expected = get_relay_setting(db, "api_relay_key").unwrap_or_default();
     if expected.trim().is_empty() {
         return Err(ProxyError::AuthError(
-            "API 中转本地 Key 未初始化，请在 CC Switch 的 API 中转页面刷新".to_string(),
+            "API 中转本地 Key 未初始化，请在 Safe Switch 的 API 中转页面刷新".to_string(),
         ));
     }
     let Some(value) = headers.get(header::AUTHORIZATION) else {
@@ -104,7 +104,7 @@ fn get_upstream(db: &Database) -> Result<(String, String), ProxyError> {
         .map_err(|e| ProxyError::Internal(format!("读取 API 中转当前供应商失败: {e}")))?
         .ok_or_else(|| {
             ProxyError::Internal(
-                "API 中转尚未配置上游供应商，请在 CC Switch 的 API 中转页面添加并启用".to_string(),
+                "API 中转尚未配置上游供应商，请在 Safe Switch 的 API 中转页面添加并启用".to_string(),
             )
         })?;
     let provider = db
