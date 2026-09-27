@@ -15,6 +15,12 @@ export default defineConfig({
     setupFiles: ["./tests/setupGlobals.ts", "./tests/setupTests.ts"],
     globals: true,
     testTimeout: 15000,
+    poolOptions: {
+      threads: {
+        maxThreads: 4,
+        minThreads: 1,
+      },
+    },
     coverage: {
       reporter: ["text", "lcov"],
     },
