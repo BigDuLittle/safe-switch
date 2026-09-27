@@ -407,7 +407,7 @@ describe("PiProviderForm", () => {
       target: { value: "json-provider" },
     });
     fireEvent.change(screen.getByLabelText("provider.name"), {
-      target: { value: "Safe Switch label" },
+      target: { value: "CC Switch label" },
     });
 
     const configEditor = screen.getByLabelText("provider.configJson");
@@ -703,8 +703,8 @@ describe("PiProviderForm", () => {
       api: "openai-completions",
       baseUrl: "https://api.example.com/v1",
       headers: {
-        "HTTP-Referer": "https://safe-switch.example",
-        "X-Title": "Safe Switch",
+        "HTTP-Referer": "https://cc-switch.example",
+        "X-Title": "CC Switch",
       },
       models: [completeModel("model-a", "Model A")],
     };
@@ -732,7 +732,7 @@ describe("PiProviderForm", () => {
       screen
         .getAllByLabelText("Value")
         .map((element) => element.getAttribute("value")),
-    ).toEqual(["https://safe-switch.example", "Safe Switch"]);
+    ).toEqual(["https://cc-switch.example", "CC Switch"]);
 
     fireEvent.click(
       screen.getByRole("button", { name: "Save existing headers" }),
@@ -761,7 +761,7 @@ describe("PiProviderForm", () => {
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit.mock.calls[0][0]).toMatchObject({
-      providerKey: "safe-switch-kimi",
+      providerKey: "cc-switch-kimi",
       name: "Kimi",
       presetCategory: "cn_official",
     });
@@ -1942,7 +1942,7 @@ describe("PiProviderForm", () => {
     render(
       <PiProviderForm
         appId="pi"
-        providerId="safe-switch-kimi"
+        providerId="cc-switch-kimi"
         submitLabel="Save external Kimi node"
         onSubmit={onSubmit}
         onCancel={() => {}}
@@ -2018,7 +2018,7 @@ describe("PiProviderForm", () => {
           },
         },
       ],
-      nativeOptionNotExposedBySafeSwitch: {
+      nativeOptionNotExposedByCcSwitch: {
         enabled: true,
         value: 3,
       },
@@ -2146,7 +2146,7 @@ describe("PiProviderForm", () => {
         submitLabel="Save unnamed provider"
         onSubmit={onSubmit}
         onCancel={() => {}}
-        initialData={{ name: "Safe Switch label", settingsConfig: input }}
+        initialData={{ name: "CC Switch label", settingsConfig: input }}
       />,
     );
 
@@ -2172,12 +2172,12 @@ describe("PiProviderForm", () => {
         submitLabel="Save independent name"
         onSubmit={onSubmit}
         onCancel={() => {}}
-        initialData={{ name: "Safe Switch label", settingsConfig: input }}
+        initialData={{ name: "CC Switch label", settingsConfig: input }}
       />,
     );
 
     expect(screen.getByLabelText("provider.name")).toHaveValue(
-      "Safe Switch label",
+      "CC Switch label",
     );
     fireEvent.click(
       screen.getByRole("button", { name: "Save independent name" }),

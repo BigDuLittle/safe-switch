@@ -309,27 +309,27 @@ describe("OpenCodeFormFields", () => {
   it("surfaces existing provider headers", () => {
     renderOpenCodeForm({
       headers: {
-        "HTTP-Referer": "https://safe-switch.app",
-        "X-Title": "Safe Switch",
+        "HTTP-Referer": "https://cc-switch.app",
+        "X-Title": "CC Switch",
       },
     });
 
     expect(screen.getByDisplayValue("HTTP-Referer")).toBeInTheDocument();
     expect(
-      screen.getByDisplayValue("https://safe-switch.app"),
+      screen.getByDisplayValue("https://cc-switch.app"),
     ).toBeInTheDocument();
     expect(screen.getByDisplayValue("X-Title")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Safe Switch")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("CC Switch")).toBeInTheDocument();
   });
 
   it("updates provider headers", () => {
     const onHeadersChange = vi.fn();
     renderOpenCodeForm({
-      headers: { "X-Title": "Safe Switch" },
+      headers: { "X-Title": "CC Switch" },
       onHeadersChange,
     });
 
-    fireEvent.change(screen.getByDisplayValue("Safe Switch"), {
+    fireEvent.change(screen.getByDisplayValue("CC Switch"), {
       target: { value: "OpenCode" },
     });
 
@@ -360,7 +360,7 @@ describe("OpenCodeFormFields", () => {
   it("removes provider headers", () => {
     const onHeadersChange = vi.fn();
     renderOpenCodeForm({
-      headers: { "X-Title": "Safe Switch" },
+      headers: { "X-Title": "CC Switch" },
       onHeadersChange,
     });
 
@@ -387,7 +387,7 @@ describe("OpenCodeFormFields", () => {
   it("restores an existing header name when it is cleared", () => {
     const onHeadersChange = vi.fn();
     renderOpenCodeForm({
-      headers: { "X-Title": "Safe Switch" },
+      headers: { "X-Title": "CC Switch" },
       onHeadersChange,
     });
 

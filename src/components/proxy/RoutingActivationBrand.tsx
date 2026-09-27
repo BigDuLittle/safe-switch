@@ -85,7 +85,7 @@ export function RoutingActivationBrand({
       )}
 
       <motion.a
-        href="https://safeswitch.io"
+        href="https://ccswitch.io"
         target="_blank"
         rel="noreferrer"
         className={cn(

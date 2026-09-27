@@ -27,7 +27,7 @@ const ppioChatCompletionsEndpoint = `${ppioOpenAiEndpoint}/chat/completions`;
 const ppioModelsEndpoint = `${ppioOpenAiEndpoint}/models`;
 const ppioBrandFields = {
   websiteUrl: "https://ppio.com",
-  apiKeyUrl: "https://ppio.com/activity/safeswitch",
+  apiKeyUrl: "https://ppio.com/activity/ccswitch",
   category: "aggregator",
   isPartner: true,
   partnerPromotionKey: "ppio",
@@ -201,7 +201,7 @@ describe("PPIO provider presets", () => {
     const pi = getPpioPreset(piProviderPresets)!;
     expect(pi).toMatchObject({
       ...ppioBrandFields,
-      providerKey: "safe-switch-ppio",
+      providerKey: "cc-switch-ppio",
       settingsConfig: {
         name: "PPIO",
         baseUrl: ppioOpenAiEndpoint,

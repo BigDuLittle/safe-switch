@@ -1,6 +1,6 @@
 //! API 中转会话记录 provider
 //!
-//! 会话文件存放于 ~/.safe-switch/relay-sessions/{conversation_hash}.jsonl
+//! 会话文件存放于 ~/.cc-switch/relay-sessions/{conversation_hash}.jsonl
 //! 每行一条 JSON 记录：{"type":"message","role":"user|assistant","content":"...","timestamp":ms}
 #![allow(
     clippy::all,
@@ -20,7 +20,7 @@ use crate::session_manager::{SessionMessage, SessionMeta};
 
 const PROVIDER_ID: &str = "relay";
 
-/// 会话文件目录：~/.safe-switch/relay-sessions/
+/// 会话文件目录：~/.cc-switch/relay-sessions/
 pub fn sessions_dir() -> PathBuf {
     crate::config::get_app_config_dir().join("relay-sessions")
 }

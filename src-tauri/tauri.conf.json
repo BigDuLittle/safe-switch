@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Safe Switch",
   "version": "1.0.1",
-  "identifier": "com.safeswitch.desktop",
+  "identifier": "com.ccswitch.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3000",
@@ -60,7 +60,7 @@
     "deep-link": {
       "desktop": {
         "schemes": [
-          "safeswitch"
+          "ccswitch"
         ]
       }
     },

@@ -1,4 +1,4 @@
-use safe_switch_lib::{AppType, Prompt, PromptService};
+use cc_switch_lib::{AppType, Prompt, PromptService};
 use serde_json::json;
 use std::fs;
 

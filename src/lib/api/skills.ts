@@ -215,7 +215,7 @@ export const skillsApi = {
 
   /** 迁移 Skill 存储位置 */
   async migrateStorage(
-    target: "safe_switch" | "unified",
+    target: "cc_switch" | "unified",
   ): Promise<MigrationResult> {
     return await invoke("migrate_skill_storage", { target });
   },

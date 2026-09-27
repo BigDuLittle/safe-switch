@@ -8,7 +8,7 @@
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde_json::{json, Value};
 
-pub(crate) const OPENAI_REASONING_ITEM_PREFIX: &str = "safeswitch-openai-reasoning-v1:";
+pub(crate) const OPENAI_REASONING_ITEM_PREFIX: &str = "ccswitch-openai-reasoning-v1:";
 
 pub(crate) fn reasoning_summary_text(item: &Value) -> String {
     item.get("summary")

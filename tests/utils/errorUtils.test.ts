@@ -14,7 +14,7 @@ describe("error utilities", () => {
 
     expect(
       translatePiProviderMutationError(
-        "Pi models.json changed outside Safe Switch",
+        "Pi models.json changed outside CC Switch",
         t,
       ),
     ).toBe("pi.provider.writeConflict");

@@ -155,7 +155,7 @@ describe("SettingsPage integration", () => {
     const appInput = await screen.findByPlaceholderText(
       "settings.browsePlaceholderApp",
     );
-    expect((appInput as HTMLInputElement).value).toBe("/home/mock/.safe-switch");
+    expect((appInput as HTMLInputElement).value).toBe("/home/mock/.cc-switch");
   });
 
   it("imports configuration and triggers success callback", async () => {
@@ -226,15 +226,15 @@ describe("SettingsPage integration", () => {
     const appInput = (await screen.findByPlaceholderText(
       "settings.browsePlaceholderApp",
     )) as HTMLInputElement;
-    expect(appInput.value).toBe("/home/mock/.safe-switch");
+    expect(appInput.value).toBe("/home/mock/.cc-switch");
 
     fireEvent.click(browseButtons[0]);
     await waitFor(() =>
-      expect(appInput.value).toBe("/home/mock/.safe-switch/picked"),
+      expect(appInput.value).toBe("/home/mock/.cc-switch/picked"),
     );
 
     fireEvent.click(resetButtons[0]);
-    await waitFor(() => expect(appInput.value).toBe("/home/mock/.safe-switch"));
+    await waitFor(() => expect(appInput.value).toBe("/home/mock/.cc-switch"));
 
     const claudeInput = (await screen.findByPlaceholderText(
       "settings.browsePlaceholderClaude",

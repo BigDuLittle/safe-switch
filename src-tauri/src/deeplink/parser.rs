@@ -1,6 +1,6 @@
 //! Deep link URL parser
 //!
-//! Parses safeswitch:// URLs into DeepLinkImportRequest structures.
+//! Parses ccswitch:// URLs into DeepLinkImportRequest structures.
 
 use super::utils::validate_url;
 use super::DeepLinkImportRequest;
@@ -8,10 +8,10 @@ use crate::error::AppError;
 use std::collections::HashMap;
 use url::Url;
 
-/// Parse a safeswitch:// URL into a DeepLinkImportRequest
+/// Parse a ccswitch:// URL into a DeepLinkImportRequest
 ///
 /// Expected format:
-/// safeswitch://v1/import?resource={type}&...
+/// ccswitch://v1/import?resource={type}&...
 pub fn parse_deeplink_url(url_str: &str) -> Result<DeepLinkImportRequest, AppError> {
     // Parse URL
     let url = Url::parse(url_str)
@@ -19,9 +19,9 @@ pub fn parse_deeplink_url(url_str: &str) -> Result<DeepLinkImportRequest, AppErr
 
     // Validate scheme
     let scheme = url.scheme();
-    if scheme != "safeswitch" {
+    if scheme != "ccswitch" {
         return Err(AppError::InvalidInput(format!(
-            "Invalid scheme: expected 'safeswitch', got '{scheme}'"
+            "Invalid scheme: expected 'ccswitch', got '{scheme}'"
         )));
     }
 

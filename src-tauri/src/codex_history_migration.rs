@@ -4,7 +4,7 @@
 //! 失败时不写标记，下一次启动自动重试。
 
 use crate::codex_config::{
-    get_codex_config_dir, read_codex_config_text, SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID,
+    get_codex_config_dir, read_codex_config_text, CC_SWITCH_CODEX_MODEL_PROVIDER_ID,
 };
 use crate::codex_state_db::codex_state_db_paths;
 use crate::config::{atomic_write, copy_file, get_app_config_dir};
@@ -44,11 +44,11 @@ fn lock_codex_official_history_op() -> std::sync::MutexGuard<'static, ()> {
 /// Codex 内建默认 provider id：config.toml 没有 `model_provider` 键时会话归入此桶。
 /// 官方订阅（ChatGPT OAuth / OpenAI API key）的历史会话都记录这个 id。
 const OFFICIAL_OPENAI_CODEX_MODEL_PROVIDER_ID: &str = "openai";
-const LEGACY_SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID: &str = "safeswitch";
+const LEGACY_CC_SWITCH_CODEX_MODEL_PROVIDER_ID: &str = "ccswitch";
 // If a Codex preset ever used a temporary routing key, keep that old key here
 // so local history can be bucketed under the current custom provider id.
-const SAFE_SWITCH_LEGACY_CODEX_MODEL_PROVIDER_IDS: &[&str] = &[
-    LEGACY_SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID,
+const CC_SWITCH_LEGACY_CODEX_MODEL_PROVIDER_IDS: &[&str] = &[
+    LEGACY_CC_SWITCH_CODEX_MODEL_PROVIDER_ID,
     "aicodemirror",
     "aicoding",
     "aigocode",
@@ -127,7 +127,7 @@ pub fn maybe_migrate_codex_third_party_history_provider_bucket(
         crate::settings::mark_codex_third_party_history_provider_bucket_migrated(
             CodexThirdPartyHistoryProviderBucketMigration {
                 completed_at: Utc::now().to_rfc3339(),
-                target_provider_id: SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string(),
+                target_provider_id: CC_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string(),
                 source_provider_ids: Vec::new(),
                 migrated_jsonl_files: 0,
                 migrated_state_rows: 0,
@@ -151,7 +151,7 @@ pub fn maybe_migrate_codex_third_party_history_provider_bucket(
     crate::settings::mark_codex_third_party_history_provider_bucket_migrated(
         CodexThirdPartyHistoryProviderBucketMigration {
             completed_at: Utc::now().to_rfc3339(),
-            target_provider_id: SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string(),
+            target_provider_id: CC_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string(),
             source_provider_ids: source_provider_ids_vec.clone(),
             migrated_jsonl_files,
             migrated_state_rows,
@@ -194,7 +194,7 @@ pub fn maybe_migrate_codex_provider_template_bucket(
 /// 重新开启并再次勾选即可补迁关闭期间产生的官方会话。
 /// custom 桶里官方与第三方会话无法区分，自动逻辑绝不反向搬回；
 /// 用户可在关闭开关时选择按备份账本精确还原（见 `restore_codex_official_history_from_backups`）。
-/// 迁移前 jsonl / state DB 均备份到 `~/.safe-switch/backups/codex-official-history-unify-v1/`。
+/// 迁移前 jsonl / state DB 均备份到 `~/.cc-switch/backups/codex-official-history-unify-v1/`。
 pub fn maybe_migrate_codex_official_history_to_unified_bucket(
 ) -> Result<CodexHistoryProviderBucketMigrationOutcome, AppError> {
     if !crate::settings::unify_codex_session_history() {
@@ -256,7 +256,7 @@ pub fn maybe_migrate_codex_official_history_to_unified_bucket(
     let marker_written = crate::settings::mark_codex_official_history_unify_migrated_if_enabled(
         CodexOfficialHistoryUnifyMigration {
             completed_at: Utc::now().to_rfc3339(),
-            target_provider_id: SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string(),
+            target_provider_id: CC_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string(),
             migrated_jsonl_files,
             migrated_state_rows,
             codex_config_dir: Some(codex_dir_key),
@@ -281,7 +281,7 @@ fn codex_config_text_routes_custom(config_text: &str) -> bool {
         .and_then(|doc| {
             doc.get("model_provider")
                 .and_then(|item| item.as_str())
-                .map(|id| id.trim() == SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID)
+                .map(|id| id.trim() == CC_SWITCH_CODEX_MODEL_PROVIDER_ID)
         })
         .unwrap_or(false)
 }
@@ -576,7 +576,7 @@ fn rewrite_codex_session_meta_line_for_restore(
         return None;
     }
     let payload = value.get_mut("payload")?.as_object_mut()?;
-    if payload.get("model_provider")?.as_str()? != SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID {
+    if payload.get("model_provider")?.as_str()? != CC_SWITCH_CODEX_MODEL_PROVIDER_ID {
         return None;
     }
     let session_id = payload.get("id")?.as_str()?;
@@ -619,7 +619,7 @@ fn restore_codex_state_db_official_threads(
             "SELECT COUNT(*) FROM threads WHERE model_provider = ? AND id IN ({placeholders})"
         );
         let mut values = Vec::with_capacity(chunk.len() + 1);
-        values.push(SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string());
+        values.push(CC_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string());
         values.extend(chunk.iter().map(|id| (*id).clone()));
         let count: i64 = conn
             .query_row(&count_sql, params_from_iter(values.iter()), |row| {
@@ -645,7 +645,7 @@ fn restore_codex_state_db_official_threads(
         );
         let mut values = Vec::with_capacity(chunk.len() + 2);
         values.push(OFFICIAL_OPENAI_CODEX_MODEL_PROVIDER_ID.to_string());
-        values.push(SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string());
+        values.push(CC_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string());
         values.extend(chunk.iter().map(|id| (*id).clone()));
         changed += tx
             .execute(&update_sql, params_from_iter(values.iter()))
@@ -716,7 +716,7 @@ fn collect_source_model_provider_ids(db: &Database) -> Result<BTreeSet<String>, 
             continue;
         }
 
-        insert_known_safe_switch_legacy_source_id(&mut ids, &provider.id);
+        insert_known_cc_switch_legacy_source_id(&mut ids, &provider.id);
 
         let Some(config_text) = provider
             .settings_config
@@ -727,21 +727,21 @@ fn collect_source_model_provider_ids(db: &Database) -> Result<BTreeSet<String>, 
         };
 
         for provider_id in trusted_legacy_codex_model_provider_ids_from_config(config_text) {
-            insert_known_safe_switch_legacy_source_id(&mut ids, &provider_id);
+            insert_known_cc_switch_legacy_source_id(&mut ids, &provider_id);
         }
         if let Some(provider_id) =
             legacy_codex_model_provider_id_from_normalized_config(config_text)
         {
-            insert_known_safe_switch_legacy_source_id(&mut ids, &provider_id);
+            insert_known_cc_switch_legacy_source_id(&mut ids, &provider_id);
         }
     }
 
     Ok(ids)
 }
 
-fn insert_known_safe_switch_legacy_source_id(ids: &mut BTreeSet<String>, provider_id: &str) {
+fn insert_known_cc_switch_legacy_source_id(ids: &mut BTreeSet<String>, provider_id: &str) {
     let trimmed = provider_id.trim();
-    if is_known_safe_switch_legacy_codex_model_provider_id(trimmed) {
+    if is_known_cc_switch_legacy_codex_model_provider_id(trimmed) {
         ids.insert(trimmed.to_string());
     }
 }
@@ -753,8 +753,8 @@ fn migration_backup_root(migration_name: &str) -> PathBuf {
         .join(Local::now().format("%Y%m%d_%H%M%S").to_string())
 }
 
-fn is_known_safe_switch_legacy_codex_model_provider_id(provider_id: &str) -> bool {
-    SAFE_SWITCH_LEGACY_CODEX_MODEL_PROVIDER_IDS
+fn is_known_cc_switch_legacy_codex_model_provider_id(provider_id: &str) -> bool {
+    CC_SWITCH_LEGACY_CODEX_MODEL_PROVIDER_IDS
         .iter()
         .any(|known| known.eq_ignore_ascii_case(provider_id))
 }
@@ -765,8 +765,8 @@ fn legacy_codex_model_provider_id_from_normalized_config(config_text: &str) -> O
         .get("model_provider")
         .and_then(|item| item.as_str())
         .map(str::trim)?;
-    if provider_id != SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID
-        && provider_id != LEGACY_SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID
+    if provider_id != CC_SWITCH_CODEX_MODEL_PROVIDER_ID
+        && provider_id != LEGACY_CC_SWITCH_CODEX_MODEL_PROVIDER_ID
     {
         return None;
     }
@@ -784,8 +784,8 @@ fn legacy_codex_model_provider_id_from_normalized_config(config_text: &str) -> O
 }
 
 fn normalized_legacy_codex_provider_name(name: &str) -> Option<&'static str> {
-    if is_known_safe_switch_legacy_codex_model_provider_id(name) {
-        return SAFE_SWITCH_LEGACY_CODEX_MODEL_PROVIDER_IDS
+    if is_known_cc_switch_legacy_codex_model_provider_id(name) {
+        return CC_SWITCH_LEGACY_CODEX_MODEL_PROVIDER_IDS
             .iter()
             .copied()
             .find(|known| known.eq_ignore_ascii_case(name));
@@ -834,7 +834,7 @@ fn insert_trusted_legacy_config_model_provider_id(
         return;
     };
     if provider_id.is_empty()
-        || !is_known_safe_switch_legacy_codex_model_provider_id(provider_id)
+        || !is_known_cc_switch_legacy_codex_model_provider_id(provider_id)
         || !config_defines_model_provider(doc, provider_id)
     {
         return;
@@ -874,7 +874,7 @@ fn migrate_provider_config_template_to_custom(
         .map(str::to_string);
 
     let custom_table_exists =
-        config_defines_model_provider(&doc, SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID);
+        config_defines_model_provider(&doc, CC_SWITCH_CODEX_MODEL_PROVIDER_ID);
     let source_provider_id_to_move = active_provider_id
         .as_deref()
         .filter(|provider_id| source_provider_ids.contains(*provider_id))
@@ -900,7 +900,7 @@ fn migrate_provider_config_template_to_custom(
         let Some(provider_table) = model_providers.remove(source_provider_id.as_str()) else {
             return Ok(None);
         };
-        model_providers[SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID] = provider_table;
+        model_providers[CC_SWITCH_CODEX_MODEL_PROVIDER_ID] = provider_table;
         changed = true;
     }
 
@@ -908,7 +908,7 @@ fn migrate_provider_config_template_to_custom(
         .as_deref()
         .is_some_and(|provider_id| source_provider_ids.contains(provider_id))
     {
-        doc["model_provider"] = toml_edit::value(SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID);
+        doc["model_provider"] = toml_edit::value(CC_SWITCH_CODEX_MODEL_PROVIDER_ID);
         changed = true;
     }
 
@@ -950,7 +950,7 @@ fn rewrite_legacy_provider_profile_refs(doc: &mut DocumentMut, source_provider_i
         if references_legacy {
             profile_table.insert(
                 "model_provider",
-                toml_edit::value(SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID),
+                toml_edit::value(CC_SWITCH_CODEX_MODEL_PROVIDER_ID),
             );
             changed = true;
         }
@@ -1093,7 +1093,7 @@ fn rewrite_codex_session_meta_line(
 
     payload.insert(
         "model_provider".to_string(),
-        Value::String(SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string()),
+        Value::String(CC_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string()),
     );
     serde_json::to_string(&value).ok()
 }
@@ -1156,7 +1156,7 @@ fn migrate_codex_state_db_provider_bucket(
     let update_sql =
         format!("UPDATE threads SET model_provider = ? WHERE model_provider IN ({placeholders})");
     let mut values = Vec::with_capacity(source_provider_ids.len() + 1);
-    values.push(SAFE_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string());
+    values.push(CC_SWITCH_CODEX_MODEL_PROVIDER_ID.to_string());
     values.extend(source_provider_ids.iter().cloned());
     let tx = conn
         .transaction()
@@ -1382,13 +1382,13 @@ base_url = "https://aihubmix.example/v1"
                 None,
             ),
             Provider::with_id(
-                "legacy-safeswitch".to_string(),
+                "legacy-ccswitch".to_string(),
                 "Legacy Safe Switch".to_string(),
                 serde_json::json!({
                     "auth": {},
-                    "config": r#"model_provider = "safeswitch"
+                    "config": r#"model_provider = "ccswitch"
 
-[model_providers.safeswitch]
+[model_providers.ccswitch]
 name = "AIHubMix"
 base_url = "https://aihubmix.example/v1"
 "#
@@ -1454,7 +1454,7 @@ base_url = "https://proxy.example/v1"
         let source_provider_ids = collect_source_model_provider_ids(&db).expect("collect ids");
         assert_eq!(
             source_provider_ids,
-            source_ids(&["aihubmix", "safeswitch", "rightcode"])
+            source_ids(&["aihubmix", "ccswitch", "rightcode"])
         );
 
         let session_dir = codex_dir.join("sessions/2026/05/28");
@@ -1465,7 +1465,7 @@ base_url = "https://proxy.example/v1"
             concat!(
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s1\",\"model_provider\":\"rightcode\"}}\n",
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s2\",\"model_provider\":\"aihubmix\"}}\n",
-                "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s3\",\"model_provider\":\"safeswitch\"}}\n",
+                "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s3\",\"model_provider\":\"ccswitch\"}}\n",
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s4\",\"model_provider\":\"my-private-relay\"}}\n",
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s5\",\"model_provider\":\"openai\"}}\n",
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s6\",\"model_provider\":\"custom\"}}\n",
@@ -1500,7 +1500,7 @@ base_url = "https://proxy.example/v1"
             INSERT INTO threads (id, model_provider) VALUES
                 ('rightcode-thread', 'rightcode'),
                 ('aihubmix-thread', 'aihubmix'),
-                ('safeswitch-thread', 'safeswitch'),
+                ('ccswitch-thread', 'ccswitch'),
                 ('manual-thread', 'my-private-relay'),
                 ('openai-thread', 'openai'),
                 ('custom-thread', 'custom');",
@@ -1549,7 +1549,7 @@ base_url = "https://proxy.example/v1"
                     .map(String::as_str)
                     .collect::<Vec<_>>()
             ),
-            source_ids(&["legacy-safeswitch", "rightcode"])
+            source_ids(&["legacy-ccswitch", "rightcode"])
         );
 
         let config_provider_id = |provider_id: &str| -> String {
@@ -1576,17 +1576,17 @@ base_url = "https://proxy.example/v1"
             .and_then(|value| value.get("aihubmix"))
             .is_none());
 
-        let safeswitch_config: toml::Value =
-            toml::from_str(&config_provider_id("legacy-safeswitch")).expect("parse safeswitch config");
+        let ccswitch_config: toml::Value =
+            toml::from_str(&config_provider_id("legacy-ccswitch")).expect("parse ccswitch config");
         assert_eq!(
-            safeswitch_config
+            ccswitch_config
                 .get("model_provider")
                 .and_then(|value| value.as_str()),
             Some("custom")
         );
-        assert!(safeswitch_config
+        assert!(ccswitch_config
             .get("model_providers")
-            .and_then(|value| value.get("safeswitch"))
+            .and_then(|value| value.get("ccswitch"))
             .is_none());
 
         let manual_config: toml::Value =
@@ -2272,14 +2272,14 @@ model_provider = "my-private-relay"
     }
 
     #[test]
-    fn collects_legacy_safeswitch_provider_id_from_stored_config() {
+    fn collects_legacy_ccswitch_provider_id_from_stored_config() {
         let db = Database::memory().expect("memory db");
         let mut provider = Provider::with_id(
             "generated-uuid".to_string(),
             "Legacy Stable".to_string(),
             serde_json::json!({
                 "auth": {},
-                "config": "model_provider = \"safeswitch\"\n\n[model_providers.safeswitch]\nname = \"AIHubMix\"\nbase_url = \"https://aihubmix.example/v1\""
+                "config": "model_provider = \"ccswitch\"\n\n[model_providers.ccswitch]\nname = \"AIHubMix\"\nbase_url = \"https://aihubmix.example/v1\""
             }),
             None,
         );
@@ -2288,7 +2288,7 @@ model_provider = "my-private-relay"
         db.save_provider("codex", &provider).expect("save provider");
 
         let ids = collect_source_model_provider_ids(&db).expect("collect ids");
-        assert!(ids.contains("safeswitch"));
+        assert!(ids.contains("ccswitch"));
         assert!(ids.contains("aihubmix"));
         assert!(!ids.contains("generated-uuid"));
     }
@@ -2374,16 +2374,16 @@ model = "gpt-5.4"
     }
 
     #[test]
-    fn migrates_legacy_safeswitch_provider_template_to_custom() {
+    fn migrates_legacy_ccswitch_provider_template_to_custom() {
         let db = Database::memory().expect("memory db");
         let provider = Provider::with_id(
-            "legacy-safeswitch".to_string(),
+            "legacy-ccswitch".to_string(),
             "Legacy Safe Switch".to_string(),
             serde_json::json!({
                 "auth": {},
-                "config": r#"model_provider = "safeswitch"
+                "config": r#"model_provider = "ccswitch"
 
-[model_providers.safeswitch]
+[model_providers.ccswitch]
 name = "AIHubMix"
 base_url = "https://aihubmix.example/v1"
 "#
@@ -2395,11 +2395,11 @@ base_url = "https://aihubmix.example/v1"
         let (outcome, _backup_dir) = migrate_provider_templates_for_test(&db);
         assert_eq!(
             outcome.migrated_provider_ids,
-            vec!["legacy-safeswitch".to_string()]
+            vec!["legacy-ccswitch".to_string()]
         );
 
         let saved = db
-            .get_provider_by_id("legacy-safeswitch", "codex")
+            .get_provider_by_id("legacy-ccswitch", "codex")
             .expect("get provider")
             .expect("provider exists");
         let config_text = saved
@@ -2417,7 +2417,7 @@ base_url = "https://aihubmix.example/v1"
         );
         assert!(parsed
             .get("model_providers")
-            .and_then(|value| value.get("safeswitch"))
+            .and_then(|value| value.get("ccswitch"))
             .is_none());
         assert_eq!(
             parsed
@@ -2587,7 +2587,7 @@ model_provider = "aihubmix"
     }
 
     #[test]
-    fn skips_custom_category_unknown_provider_when_created_by_safe_switch() {
+    fn skips_custom_category_unknown_provider_when_created_by_cc_switch() {
         let db = Database::memory().expect("memory db");
         let mut provider = Provider::with_id(
             "generated-uuid".to_string(),

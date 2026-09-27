@@ -198,8 +198,8 @@ jobs:
       - name: Prepare WSL2-backed test environment
         shell: pwsh
         run: |
-          wsl.exe -d Ubuntu-24.04 -- bash -lc "rm -rf /tmp/safe-switch-windows-test-root && mkdir -p /tmp/safe-switch-windows-test-root/{home,temp} && chmod -R 0777 /tmp/safe-switch-windows-test-root"
-          $testRoot = "\\wsl.localhost\Ubuntu-24.04\tmp\safe-switch-windows-test-root"
+          wsl.exe -d Ubuntu-24.04 -- bash -lc "rm -rf /tmp/cc-switch-windows-test-root && mkdir -p /tmp/cc-switch-windows-test-root/{home,temp} && chmod -R 0777 /tmp/cc-switch-windows-test-root"
+          $testRoot = "\\wsl.localhost\Ubuntu-24.04\tmp\cc-switch-windows-test-root"
           $testHome = Join-Path $testRoot "home"
           $testTemp = Join-Path $testRoot "temp"
           foreach ($path in @($testRoot, $testHome, $testTemp)) {
@@ -207,9 +207,9 @@ jobs:
               throw "WSL2-backed test path is unavailable: $path"
             }
           }
-          "SAFE_SWITCH_TEST_HOME=$testHome" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "SAFE_SWITCH_WSL_TEST_DIR=$testRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "SAFE_SWITCH_WSL_TEST_TEMP=$testTemp" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CC_SWITCH_TEST_HOME=$testHome" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CC_SWITCH_WSL_TEST_DIR=$testRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CC_SWITCH_WSL_TEST_TEMP=$testTemp" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Compile backend tests with native temp
         # link.exe/mt.exe cannot create manifests when TEMP points at a WSL UNC path.
@@ -224,7 +224,7 @@ jobs:
             ForEach-Object {
               if ($_ -match '"reason":"compiler-artifact"') {
                 $artifact = $_ | ConvertFrom-Json
-                if ($artifact.executable -and $artifact.profile.test -and $artifact.target.name -eq 'safe_switch_lib') {
+                if ($artifact.executable -and $artifact.profile.test -and $artifact.target.name -eq 'cc_switch_lib') {
                   $artifact.executable
                 }
               }
@@ -233,9 +233,9 @@ jobs:
             exit $LASTEXITCODE
           }
           if (-not $testBinary) {
-            throw "safe_switch_lib test binary not found in cargo compiler artifacts"
+            throw "cc_switch_lib test binary not found in cargo compiler artifacts"
           }
-          "SAFE_SWITCH_TEST_EXE=$testBinary" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CC_SWITCH_TEST_EXE=$testBinary" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Run Windows-to-WSL2 filesystem contract
         # Run the test binary built in the previous step directly. Invoking cargo
@@ -243,10 +243,10 @@ jobs:
         # link.exe/mt.exe cannot create manifest temp files on \\wsl.localhost.
         shell: pwsh
         run: |
-          $env:TEMP = $env:SAFE_SWITCH_WSL_TEST_TEMP
-          $env:TMP = $env:SAFE_SWITCH_WSL_TEST_TEMP
+          $env:TEMP = $env:CC_SWITCH_WSL_TEST_TEMP
+          $env:TMP = $env:CC_SWITCH_WSL_TEST_TEMP
           $testName = "config::tests::atomic_write_replaces_existing_wsl_unc_file"
-          $testList = & $env:SAFE_SWITCH_TEST_EXE --list --ignored
+          $testList = & $env:CC_SWITCH_TEST_EXE --list --ignored
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
@@ -254,7 +254,7 @@ jobs:
           if ($testList -notcontains $expected) {
             throw "Expected ignored test was not discovered: $testName"
           }
-          & $env:SAFE_SWITCH_TEST_EXE $testName --ignored --exact --nocapture
+          & $env:CC_SWITCH_TEST_EXE $testName --ignored --exact --nocapture
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
