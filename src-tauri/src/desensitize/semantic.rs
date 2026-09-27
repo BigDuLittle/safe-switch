@@ -481,7 +481,12 @@ mod tests {
             "项目代号是北斗七星，请继续",
             &[rule("项目代号", "codename", "semantic")],
         );
-        assert!(hits.iter().any(|h| h.entity_type == "codename"));
+        // 用户关键词命中：以用户输入的关键词本身作为映射键（跨形态一致复用占位符）
+        assert!(
+            hits.iter().any(|h| h.entity_type == "项目代号"),
+            "expected keyword-as-key hit, got {:?}",
+            hits
+        );
     }
     #[test]
     fn literal_matches_all_occurrences() {
@@ -543,7 +548,7 @@ mod tests {
         );
         if model_ready() {
             assert!(
-                hits.iter().any(|h| h.entity_type == "salary"),
+                hits.iter().any(|h| h.entity_type == "工资"),
                 "语义命中失败: {:?}",
                 hits
             );
@@ -561,7 +566,7 @@ mod tests {
             println!("[fine] {:?} -> {:?}", h, &text[h.start..h.end]);
         }
         if model_ready() {
-            if let Some(h) = hits.iter().find(|h| h.entity_type == "salary") {
+            if let Some(h) = hits.iter().find(|h| h.entity_type == "工资") {
                 let span = &text[h.start..h.end];
                 assert!(span.contains("薪酬"), "语义应定位到薪酬片段，实际: {span}");
                 assert!(
