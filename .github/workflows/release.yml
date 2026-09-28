@@ -15,7 +15,8 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-windows:
+    name: Build Windows (NSIS)
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -69,7 +70,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm tauri build
 
-      - name: Generate latest.json
+      - name: Generate updater fragment (windows)
         shell: pwsh
         run: |
           $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
@@ -92,16 +93,150 @@ jobs:
               }
             }
           } | ConvertTo-Json -Depth 5
-          [IO.File]::WriteAllText("src-tauri/target/release/bundle/latest.json", $json, (New-Object Text.UTF8Encoding $false))
-          Write-Host "latest.json generated: $url"
+          [IO.File]::WriteAllText("fragment-windows.json", $json, (New-Object Text.UTF8Encoding $false))
+          Write-Host "windows fragment generated: $url"
 
-      - name: Upload release
+      - name: Upload windows fragment
+        uses: actions/upload-artifact@v4
+        with:
+          name: fragment-windows
+          path: fragment-windows.json
+          if-no-files-found: error
+
+      - name: Upload release assets (windows)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', inputs.version) }}
           files: |
             src-tauri/target/release/bundle/nsis/*
-            src-tauri/target/release/bundle/latest.json
           generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-macos:
+    name: Build macOS (Universal)
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin,aarch64-apple-darwin
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Download offline model
+        shell: pwsh
+        run: |
+          $modelDir = "src-tauri/resources/models/bge-small-zh-v1.5"
+          New-Item -ItemType Directory -Force -Path $modelDir
+          $base = "https://huggingface.co/BAAI/bge-small-zh-v1.5/resolve/main"
+          $files = @("config.json", "model.safetensors", "tokenizer.json", "tokenizer_config.json", "vocab.txt")
+          foreach ($f in $files) {
+            Write-Host "Downloading $f ..."
+            Invoke-WebRequest -Uri "$base/$f" -OutFile "$modelDir/$f"
+          }
+          '{"use_pytorch_mha":true}' | Out-File -Encoding utf8 "$modelDir/ort_config.json"
+
+      - name: Build Universal bundle
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: pnpm tauri build --target universal-apple-darwin
+
+      - name: Generate updater fragment (darwin)
+        shell: pwsh
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          $bundleDir = "src-tauri/target/universal-apple-darwin/release/bundle/macos"
+          $appTgz = Get-ChildItem "$bundleDir/*.app.tar.gz" | Select-Object -First 1
+          if (-not $appTgz) { throw "No .app.tar.gz found in $bundleDir" }
+          $sigFile = Get-ChildItem "$bundleDir/*.app.tar.gz.sig" | Select-Object -First 1
+          if (-not $sigFile) { throw "No .sig file found for app.tar.gz" }
+          $signature = (Get-Content $sigFile.FullName -Raw).Trim()
+          # GitHub release asset names replace spaces with dots
+          $assetName = $appTgz.Name -replace ' ', '.'
+          $url = "https://github.com/BigDuLittle/safe-switch/releases/download/v$version/$assetName"
+          # Universal build serves both Apple architectures with the same artifact
+          $platforms = @{
+            "darwin-x86_64" = @{ signature = $signature; url = $url }
+            "darwin-aarch64" = @{ signature = $signature; url = $url }
+          }
+          $json = @{
+            version = $version
+            notes = "Safe Switch v$version"
+            pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            platforms = $platforms
+          } | ConvertTo-Json -Depth 5
+          [IO.File]::WriteAllText("fragment-darwin.json", $json, (New-Object Text.UTF8Encoding $false))
+          Write-Host "darwin fragment generated: $url"
+
+      - name: Upload darwin fragment
+        uses: actions/upload-artifact@v4
+        with:
+          name: fragment-darwin
+          path: fragment-darwin.json
+          if-no-files-found: error
+
+      - name: Upload release assets (macos)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', inputs.version) }}
+          files: |
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/*
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  finalize:
+    name: Merge updater manifest
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-macos]
+    steps:
+      - name: Download fragments
+        uses: actions/download-artifact@v4
+        with:
+          path: fragments
+          merge-multiple: true
+
+      - name: Merge latest.json
+        run: |
+          node -e '
+            const fs = require("fs");
+            const path = "fragments";
+            const win = JSON.parse(fs.readFileSync(path + "/fragment-windows.json", "utf8"));
+            const dar = JSON.parse(fs.readFileSync(path + "/fragment-darwin.json", "utf8"));
+            const merged = {
+              version: win.version,
+              notes: win.notes,
+              pub_date: win.pub_date,
+              platforms: Object.assign({}, win.platforms, dar.platforms)
+            };
+            fs.writeFileSync("latest.json", JSON.stringify(merged, null, 2));
+            console.log("merged platforms:", Object.keys(merged.platforms).join(", "));
+          '
+
+      - name: Upload latest.json
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', inputs.version) }}
+          files: latest.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
