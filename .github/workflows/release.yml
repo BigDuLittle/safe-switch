@@ -131,8 +131,12 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin,aarch64-apple-darwin
+
+      - name: Add macOS targets
+        # rust-toolchain.toml pins channel 1.95; dtolnay's `targets` input
+        # installs them on the stable toolchain which is not the active one.
+        # Add both targets explicitly to the active (1.95) toolchain.
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
