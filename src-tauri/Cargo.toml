@@ -1,4 +1,4 @@
-﻿[package]
+[package]
 name = "cc-switch"
 version = "0.1.1"
 description = "All-in-One Assistant for Claude Code, Codex & Gemini CLI"
@@ -82,7 +82,8 @@ hmac = "0.12"
 json5 = "0.4"
 json-five = "0.3.1"
 sys-locale = "0.3"
-# [desensitize] 绂荤嚎璇箟鍖归厤锛坆ge-small-zh-v1.5锛?candle-core = { version = "0.9", default-features = false }
+# [desensitize] offline semantic matching (bge-small-zh-v1.5)
+candle-core = { version = "0.9", default-features = false }
 candle-nn = "0.9"
 candle-transformers = { version = "0.9", default-features = false }
 tokenizers = "0.19"
