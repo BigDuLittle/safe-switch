@@ -95,8 +95,8 @@ pub fn process_inbound(body: Value, session_key: &str) -> Value {
     let Some(db) = crate::desensitize::db() else {
         return body;
     };
-    // [desensitize] 全局开关关闭：整包旁路（不扫描、不改写）
-    if !mapper::get_enabled(db) {
+    // [desensitize] 该应用的脱敏开关关闭：整包旁路（不扫描、不改写）
+    if !mapper::get_app_enabled(db, session_key) {
         return body;
     }
     let keywords = mapper::list_keywords(db).unwrap_or_default();

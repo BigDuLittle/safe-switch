@@ -374,6 +374,50 @@ pub fn get_enabled(db: &Database) -> bool {
     .unwrap_or(true)
 }
 
+/// 支持本地路由（可脱敏）的应用列表
+pub const ROUTING_APPS: [&str; 4] = ["claude", "codex", "gemini", "grokbuild"];
+
+/// 按应用的脱敏开关（settings 表 key = desensitize_enabled:<app>；未配置时默认 true=启用）
+pub fn get_app_enabled(db: &Database, app: &str) -> bool {
+    let conn = match db.conn.lock() {
+        Ok(c) => c,
+        Err(e) => e.into_inner(),
+    };
+    let key = format!("desensitize_enabled:{app}");
+    conn.query_row(
+        "SELECT value FROM settings WHERE key = ?1",
+        [key],
+        |r| r.get::<_, String>(0).map(|v| v == "1"),
+    )
+    .unwrap_or(true)
+}
+
+/// 列出所有支持本地路由的应用及其脱敏开关状态
+pub fn list_app_enabled(db: &Database) -> Vec<(String, bool)> {
+    ROUTING_APPS
+        .iter()
+        .map(|a| (a.to_string(), get_app_enabled(db, a)))
+        .collect()
+}
+
+/// 设置某应用的脱敏开关
+pub fn set_app_enabled(db: &Database, app: &str, enabled: bool) -> Result<(), AppError> {
+    if !ROUTING_APPS.contains(&app) {
+        return Err(AppError::InvalidInput(format!(
+            "应用 {app} 不支持本地路由，无法配置脱敏开关"
+        )));
+    }
+    let conn = lock_conn!(db.conn);
+    let key = format!("desensitize_enabled:{app}");
+    conn.execute(
+        "INSERT INTO settings (key, value) VALUES (?1, ?2)
+         ON CONFLICT(key) DO UPDATE SET value = ?2",
+        rusqlite::params![key, if enabled { "1" } else { "0" }],
+    )
+    .map_err(|e| AppError::Database(e.to_string()))?;
+    Ok(())
+}
+
 /// 脱敏范围（settings 表；未配置时默认 "user"=仅用户内容，不碰系统提示词/工具定义等）
 pub fn get_scope(db: &Database) -> String {
     let conn = match db.conn.lock() {

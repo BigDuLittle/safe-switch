@@ -1769,6 +1769,8 @@ pub fn run() {
             desensitize::commands::delete_desensitize_mapping,
             desensitize::commands::get_desensitize_enabled,
             desensitize::commands::set_desensitize_enabled,
+            desensitize::commands::list_desensitize_app_enabled,
+            desensitize::commands::set_desensitize_app_enabled,
             desensitize::commands::get_desensitize_scope,
             desensitize::commands::set_desensitize_scope,
         ]);

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
 import { invoke } from "@tauri-apps/api/core";
 import { useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, KeyRound, MoreHorizontal, Plus } from "lucide-react";
+import { ExternalLink, KeyRound, MoreHorizontal, Plus, ShieldCheck } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { Provider, VisibleApps } from "@/types";
 import { KNOWN_APP_TYPES, type AppTypeFilter } from "@/types/usage";
@@ -1415,14 +1415,20 @@ function App() {
         return <AppsPage />;
       case "desensitize":
         return (
-          <div
-            id="main-content"
-            className="min-h-0 flex-1 overflow-y-auto scroll-stable"
-          >
-            <div className="px-6 pb-10 pt-4">
-              <DesensitizePanel />
+          <>
+            <AppPageHeader
+              icon={<ShieldCheck className="h-5 w-5" strokeWidth={1.5} />}
+              title={t("nav.desensitize")}
+            />
+            <div
+              id="main-content"
+              className="min-h-0 flex-1 overflow-y-auto scroll-stable"
+            >
+              <div className="px-6 pb-10 pt-4">
+                <DesensitizePanel />
+              </div>
             </div>
-          </div>
+          </>
         );
       default:
         return null;

@@ -39,6 +39,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+// [desensitize] 路由应用的展示名
+function appLabel(app: string): string {
+  switch (app) {
+    case "claude":
+      return "Claude";
+    case "codex":
+      return "Codex";
+    case "gemini":
+      return "Gemini";
+    case "grokbuild":
+      return "Grok";
+    default:
+      return app;
+  }
+}
+
 // [desensitize] 把上下文片段里的命中词高亮显示
 function HighlightHit({ text, hit }: { text: string; hit: string }) {
   if (!hit) return <span className="text-xs">{text}</span>;
@@ -260,11 +276,13 @@ export default function DesensitizePanel() {
   const [logKw, setLogKw] = useState("");
   const [logPage, setLogPage] = useState(1);
   const PAGE_SIZE = 10;
-  const [enabled, setEnabled] = useState(true);
   const [piiEnabled, setPiiEnabled] = useState(true);
   const [keywordEnabled, setKeywordEnabled] = useState(true);
   const [scope, setScope] = useState<"user" | "all">("user");
   const [loading, setLoading] = useState(true);
+  const [appEnabledList, setAppEnabledList] = useState<
+    { app: string; enabled: boolean }[]
+  >([]);
 
   // 映射表管理
   const [mappings, setMappings] = useState<DesensitizeMapping[]>([]);
@@ -317,26 +335,26 @@ export default function DesensitizePanel() {
 
   const refresh = useCallback(async () => {
     try {
-      const [d, rc, k, l, e, scp, pe, ke, st] = await Promise.all([
+      const [d, rc, k, l, scp, pe, ke, st, apps] = await Promise.all([
         desensitizeApi.dashboard(),
         desensitizeApi.listRuleCategories(),
         desensitizeApi.listKeywords(),
         desensitizeApi.queryLogs(500, 0),
-        desensitizeApi.getEnabled(),
         desensitizeApi.getScope(),
         desensitizeApi.getPiiEnabled(),
         desensitizeApi.getKeywordEnabled(),
         desensitizeApi.getSemanticThreshold(),
+        desensitizeApi.listAppEnabled(),
       ]);
       setDashboard(d);
       setRuleCategories(rc);
       setKeywords(k);
       setLogs(l.logs);
-      setEnabled(e.enabled);
       setScope(scp.scope);
       setPiiEnabled(pe.enabled);
       setKeywordEnabled(ke.enabled);
       setMtThreshold(st.threshold);
+      setAppEnabledList(apps.items);
     } catch (err) {
       toast.error(String(err));
     } finally {
@@ -466,18 +484,6 @@ export default function DesensitizePanel() {
           x.id === k.id ? { ...x, match_mode: k.match_mode } : x,
         ),
       );
-      toast.error(String(err));
-    }
-  };
-
-  const handleToggleEnabled = async (next: boolean) => {
-    try {
-      await desensitizeApi.setEnabled(next);
-      setEnabled(next);
-      toast.success(
-        next ? t("desensitize.enabledOn") : t("desensitize.enabledOff"),
-      );
-    } catch (err) {
       toast.error(String(err));
     }
   };
@@ -681,25 +687,64 @@ export default function DesensitizePanel() {
   return (
     <div className="px-6 pt-4 flex flex-col flex-1 min-h-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto overflow-x-hidden pb-12 px-1">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-semibold">{t("desensitize.title")}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t("desensitize.subtitle")}
-            </p>
+        {/* 应用级脱敏开关：仅对支持本地路由的应用生效 */}
+        <div className="mb-4 rounded-lg border bg-card p-4">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+              <span className="text-sm font-medium">
+                {t("desensitize.appScopeTitle", {
+                  defaultValue: "按应用启用隐私保护",
+                })}
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {t("desensitize.appScopeDesc", {
+                defaultValue:
+                  "仅下列应用的流量会经过本地代理，可独立开关；直连应用不经过此代理",
+              })}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge
-              variant={enabled ? "default" : "secondary"}
-              className={cn(
-                enabled
-                  ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400"
-                  : "",
-              )}
-            >
-              {enabled ? t("desensitize.on") : t("desensitize.off")}
-            </Badge>
-            <Switch checked={enabled} onCheckedChange={handleToggleEnabled} />
+          <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {appEnabledList.map((item) => (
+              <div
+                key={item.app}
+                className="flex items-center justify-between rounded-md border px-3 py-2"
+              >
+                <span className="text-sm">{appLabel(item.app)}</span>
+                <Switch
+                  checked={item.enabled}
+                  onCheckedChange={async (next) => {
+                    setAppEnabledList((prev) =>
+                      prev.map((x) =>
+                        x.app === item.app ? { ...x, enabled: next } : x,
+                      ),
+                    );
+                    try {
+                      await desensitizeApi.setAppEnabled(item.app, next);
+                      toast.success(
+                        next
+                          ? t("desensitize.appOn", {
+                              defaultValue: "{{app}} 已开启",
+                              app: appLabel(item.app),
+                            })
+                          : t("desensitize.appOff", {
+                              defaultValue: "{{app}} 已关闭",
+                              app: appLabel(item.app),
+                            }),
+                      );
+                    } catch (err) {
+                      setAppEnabledList((prev) =>
+                        prev.map((x) =>
+                          x.app === item.app ? { ...x, enabled: !next } : x,
+                        ),
+                      );
+                      toast.error(String(err));
+                    }
+                  }}
+                />
+              </div>
+            ))}
           </div>
         </div>
 

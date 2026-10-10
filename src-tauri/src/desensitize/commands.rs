@@ -530,6 +530,30 @@ pub fn set_desensitize_enabled(
     Ok(())
 }
 
+/// 列出所有支持本地路由的应用及其脱敏开关状态
+#[tauri::command]
+pub fn list_desensitize_app_enabled(
+    state: tauri::State<'_, AppState>,
+) -> Result<Value, String> {
+    let items = mapper::list_app_enabled(state.db.as_ref())
+        .into_iter()
+        .map(|(app, enabled)| json!({ "app": app, "enabled": enabled }))
+        .collect::<Vec<_>>();
+    Ok(json!({ "items": items }))
+}
+
+/// 设置某应用的脱敏开关
+#[tauri::command]
+pub fn set_desensitize_app_enabled(
+    state: tauri::State<'_, AppState>,
+    app: String,
+    enabled: bool,
+) -> Result<(), String> {
+    mapper::set_app_enabled(state.db.as_ref(), &app, enabled)
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 /// 大文本跳过语义通道开关状态（未配置时默认 true=跳过）
 #[tauri::command]
 pub fn get_desensitize_skip_semantic_large(

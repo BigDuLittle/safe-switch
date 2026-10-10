@@ -184,6 +184,14 @@ export const desensitizeApi = {
   setEnabled: (enabled: boolean) =>
     invoke<void>("set_desensitize_enabled", { enabled }),
 
+  listAppEnabled: () =>
+    invoke<{ items: { app: string; enabled: boolean }[] }>(
+      "list_desensitize_app_enabled",
+    ),
+
+  setAppEnabled: (app: string, enabled: boolean) =>
+    invoke<void>("set_desensitize_app_enabled", { app, enabled }),
+
   getSkipSemanticLarge: () =>
     invoke<{ skipSemanticLarge: boolean }>(
       "get_desensitize_skip_semantic_large",
