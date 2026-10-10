@@ -532,9 +532,7 @@ pub fn set_desensitize_enabled(
 
 /// 列出所有支持本地路由的应用及其脱敏开关状态
 #[tauri::command]
-pub fn list_desensitize_app_enabled(
-    state: tauri::State<'_, AppState>,
-) -> Result<Value, String> {
+pub fn list_desensitize_app_enabled(state: tauri::State<'_, AppState>) -> Result<Value, String> {
     let items = mapper::list_app_enabled(state.db.as_ref())
         .into_iter()
         .map(|(app, enabled)| json!({ "app": app, "enabled": enabled }))
@@ -549,8 +547,7 @@ pub fn set_desensitize_app_enabled(
     app: String,
     enabled: bool,
 ) -> Result<(), String> {
-    mapper::set_app_enabled(state.db.as_ref(), &app, enabled)
-        .map_err(|e| e.to_string())?;
+    mapper::set_app_enabled(state.db.as_ref(), &app, enabled).map_err(|e| e.to_string())?;
     Ok(())
 }
 

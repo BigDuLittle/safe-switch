@@ -384,11 +384,9 @@ pub fn get_app_enabled(db: &Database, app: &str) -> bool {
         Err(e) => e.into_inner(),
     };
     let key = format!("desensitize_enabled:{app}");
-    conn.query_row(
-        "SELECT value FROM settings WHERE key = ?1",
-        [key],
-        |r| r.get::<_, String>(0).map(|v| v == "1"),
-    )
+    conn.query_row("SELECT value FROM settings WHERE key = ?1", [key], |r| {
+        r.get::<_, String>(0).map(|v| v == "1")
+    })
     .unwrap_or(true)
 }
 
