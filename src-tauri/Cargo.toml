@@ -1,6 +1,6 @@
-[package]
+﻿[package]
 name = "cc-switch"
-version = "4.0.1"
+version = "0.1.1"
 description = "All-in-One Assistant for Claude Code, Codex & Gemini CLI"
 authors = ["Jason Young"]
 license = "MIT"
@@ -82,8 +82,7 @@ hmac = "0.12"
 json5 = "0.4"
 json-five = "0.3.1"
 sys-locale = "0.3"
-# [desensitize] 离线语义匹配（bge-small-zh-v1.5）
-candle-core = { version = "0.9", default-features = false }
+# [desensitize] 绂荤嚎璇箟鍖归厤锛坆ge-small-zh-v1.5锛?candle-core = { version = "0.9", default-features = false }
 candle-nn = "0.9"
 candle-transformers = { version = "0.9", default-features = false }
 tokenizers = "0.19"
@@ -114,12 +113,10 @@ objc2-app-kit = { version = "0.2", features = ["NSColor"] }
 
 # Optimize release binary size to help reduce AppImage footprint
 [profile.release]
-# 主 crate 体量大，codegen-units = 1 时 LLVM 只能单线程跑，发布编译的大头都在它身上。
-# 16 让主 crate 编译快约 64%，代价是二进制体积增加约 17%（10-05 本机基准）。
-codegen-units = 16
+# 涓?crate 浣撻噺澶э紝codegen-units = 1 鏃?LLVM 鍙兘鍗曠嚎绋嬭窇锛屽彂甯冪紪璇戠殑澶уご閮藉湪瀹冭韩涓娿€?# 16 璁╀富 crate 缂栬瘧蹇害 64%锛屼唬浠锋槸浜岃繘鍒朵綋绉鍔犵害 17%锛?0-05 鏈満鍩哄噯锛夈€?codegen-units = 16
 lto = "thin"
 opt-level = "s"
-# 使用 unwind 以便 panic hook 能捕获 backtrace（abort 会直接终止无法捕获）
+# 浣跨敤 unwind 浠ヤ究 panic hook 鑳芥崟鑾?backtrace锛坅bort 浼氱洿鎺ョ粓姝㈡棤娉曟崟鑾凤級
 panic = "unwind"
 strip = "symbols"
 
