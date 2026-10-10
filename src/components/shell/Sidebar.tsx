@@ -19,6 +19,7 @@ import {
   Route,
   Server,
   Settings,
+  ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react";
 import type { AppId } from "@/lib/api";
@@ -228,6 +229,7 @@ function MainDirectory({
     { page: "skills", label: "Skills", icon: SkillsIcon },
     { page: "prompts", label: t("nav.prompts"), icon: BookOpen },
     { page: "sessions", label: t("nav.sessions"), icon: History },
+    { page: "desensitize", label: t("nav.desensitize"), icon: ShieldCheck },
     {
       page: "auth",
       label: t("nav.auth"),

@@ -84,6 +84,7 @@ import UnifiedMcpPanel from "@/components/mcp/UnifiedMcpPanel";
 import PromptPanel from "@/components/prompts/PromptPanel";
 import { PROMPT_APP_IDS } from "@/lib/query/prompts";
 import UnifiedSkillsPanel from "@/components/skills/UnifiedSkillsPanel";
+import DesensitizePanel from "@/components/desensitize/DesensitizePanel";
 import { DeepLinkImportDialog } from "@/components/DeepLinkImportDialog";
 import { FirstRunNoticeDialog } from "@/components/FirstRunNoticeDialog";
 import { Badge } from "@/components/ui/badge";
@@ -1412,6 +1413,17 @@ function App() {
         );
       case "apps":
         return <AppsPage />;
+      case "desensitize":
+        return (
+          <div
+            id="main-content"
+            className="min-h-0 flex-1 overflow-y-auto scroll-stable"
+          >
+            <div className="px-6 pb-10 pt-4">
+              <DesensitizePanel />
+            </div>
+          </div>
+        );
       default:
         return null;
     }

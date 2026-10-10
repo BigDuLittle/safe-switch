@@ -3871,6 +3871,7 @@
     "authNeedsReauth": "An account needs to sign in again",
     "prompts": "Prompts",
     "sessions": "Sessions",
+    "desensitize": "Privacy Protection",
     "apps": "Apps",
     "appsTitle": "Apps: install, upgrade, choose which show in the sidebar",
     "appsHasUpdate": "Apps · updates available",

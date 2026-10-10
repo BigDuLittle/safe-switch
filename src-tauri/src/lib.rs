@@ -11,6 +11,7 @@ mod commands;
 mod config;
 mod database;
 mod deeplink;
+mod desensitize;
 mod error;
 mod gemini_config;
 mod gemini_mcp;
@@ -651,6 +652,9 @@ pub fn run() {
                     }
                 }
             }
+
+            // [desensitize] 注册脱敏映射引擎数据库引用（入站脱敏/出站还原热路径）
+            crate::desensitize::init(db.clone());
 
             let app_state = AppState::new(db);
 
@@ -1738,6 +1742,35 @@ pub fn run() {
             commands::enter_lightweight_mode,
             commands::exit_lightweight_mode,
             commands::is_lightweight_mode,
+            // [desensitize] 隐私保护/脱敏映射
+            desensitize::commands::get_desensitize_dashboard,
+            desensitize::commands::list_desensitize_rules,
+            desensitize::commands::list_desensitize_rule_categories,
+            desensitize::commands::set_desensitize_rule_enabled,
+            desensitize::commands::list_desensitize_keywords,
+            desensitize::commands::add_desensitize_keyword,
+            desensitize::commands::remove_desensitize_keyword,
+            desensitize::commands::export_desensitize_keywords,
+            desensitize::commands::import_desensitize_keywords,
+            desensitize::commands::update_desensitize_keyword_mode,
+            desensitize::commands::list_desensitize_semantic_categories,
+            desensitize::commands::set_desensitize_semantic_category_enabled,
+            desensitize::commands::query_desensitize_logs,
+            desensitize::commands::preview_desensitize,
+            desensitize::commands::get_desensitize_model_status,
+            desensitize::commands::set_desensitize_pii_enabled,
+            desensitize::commands::set_desensitize_keyword_enabled,
+            desensitize::commands::get_desensitize_pii_enabled,
+            desensitize::commands::get_desensitize_keyword_enabled,
+            desensitize::commands::get_desensitize_semantic_threshold,
+            desensitize::commands::set_desensitize_semantic_threshold,
+            desensitize::commands::clear_desensitize_mappings,
+            desensitize::commands::list_desensitize_mappings,
+            desensitize::commands::delete_desensitize_mapping,
+            desensitize::commands::get_desensitize_enabled,
+            desensitize::commands::set_desensitize_enabled,
+            desensitize::commands::get_desensitize_scope,
+            desensitize::commands::set_desensitize_scope,
         ]);
 
     let app = builder

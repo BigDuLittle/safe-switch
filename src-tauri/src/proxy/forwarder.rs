@@ -559,6 +559,9 @@ impl RequestForwarder {
         extensions: Extensions,
         providers: Vec<Provider>,
     ) -> Result<ForwardResult, ForwardError> {
+        // [desensitize] 入站脱敏：识别敏感实体并替换为占位符。
+        // process_inbound 内部已判断隐私保护总开关，关闭/无 DB 时整包原样返回，零副作用。
+        let body = crate::desensitize::pipeline::process_inbound(body, app_type.as_str());
         if !self.routing_state_enabled() {
             return self
                 .forward_with_retry_inner(

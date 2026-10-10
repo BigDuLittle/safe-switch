@@ -22,6 +22,7 @@ export type GlobalPage =
   | "skillsDiscovery"
   | "prompts"
   | "sessions"
+  | "desensitize"
   | "apps";
 
 export type View = AppPage | GlobalPage | "settings";
@@ -58,6 +59,7 @@ const GLOBAL_PAGES: GlobalPage[] = [
   "skillsDiscovery",
   "prompts",
   "sessions",
+  "desensitize",
   "apps",
 ];
 

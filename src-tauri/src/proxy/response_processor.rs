@@ -209,6 +209,10 @@ pub async fn handle_streaming(
         connection_guard,
     );
 
+    // [desensitize] 出站还原：用 RestoreStream 包裹字节流，增量拼接跨 chunk 占位符后还原。
+    // 总开关关闭/无 DB 时 RestoreStream 内部透传，零副作用。
+    let logged_stream = crate::desensitize::pipeline::RestoreStream::new(logged_stream);
+
     let body = axum::body::Body::from_stream(logged_stream);
     match builder.body(body) {
         Ok(resp) => resp,
@@ -322,6 +326,9 @@ pub async fn handle_non_streaming(
     for (key, value) in response_headers.iter() {
         builder = builder.header(key, value);
     }
+
+    // [desensitize] 出站还原：非流式整包响应还原占位符。总开关关闭/无 DB 时原样返回。
+    let body_bytes = bytes::Bytes::from(crate::desensitize::pipeline::restore_bytes(&body_bytes));
 
     let body = axum::body::Body::from(body_bytes);
     builder.body(body).map_err(|e| {
