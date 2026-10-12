@@ -13,6 +13,7 @@ pub mod rules;
 pub mod semantic;
 
 use crate::database::Database;
+use std::path::Path;
 use std::sync::{Arc, OnceLock, RwLock};
 
 static DB: OnceLock<Arc<Database>> = OnceLock::new();
@@ -24,6 +25,44 @@ pub fn init(db: Arc<Database>) {
     if let Some(db) = DB.get() {
         refresh_prefix_cache(&mapper::get_placeholder_prefix(db));
     }
+}
+
+/// 首次启动时把安装包里的 bge 模型拷贝到 ~/.cc-switch/models/。
+/// 已存在（且模型权重文件在）则跳过；拷贝失败仅记日志，不阻塞启动
+/// （语义匹配会自动降级为纯字面匹配）。
+pub fn ensure_bundled_model(resource_dir: Option<&Path>) {
+    let Some(resource_dir) = resource_dir else { return };
+    let src_dir = resource_dir.join("models").join("bge-small-zh-v1.5");
+    if !src_dir.exists() {
+        log::debug!("bundled model dir not found: {}", src_dir.display());
+        return;
+    }
+    let home = crate::config::get_home_dir();
+    let dst_dir = home.join(".cc-switch").join("models").join("bge-small-zh-v1.5");
+    let marker = dst_dir.join("model.safetensors");
+    if marker.exists() {
+        return;
+    }
+    if let Err(e) = copy_dir_recursive(&src_dir, &dst_dir) {
+        log::warn!("拷贝内置模型到 {} 失败: {e}", dst_dir.display());
+        return;
+    }
+    log::info!("内置模型已自举到 {}", dst_dir.display());
+}
+
+fn copy_dir_recursive(src: &Path, dst: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let from = entry.path();
+        let to = dst.join(entry.file_name());
+        if from.is_dir() {
+            copy_dir_recursive(&from, &to)?;
+        } else {
+            std::fs::copy(&from, &to)?;
+        }
+    }
+    Ok(())
 }
 
 pub(crate) fn db() -> Option<&'static Arc<Database>> {

@@ -656,6 +656,10 @@ pub fn run() {
             // [desensitize] 注册脱敏映射引擎数据库引用（入站脱敏/出站还原热路径）
             crate::desensitize::init(db.clone());
 
+            // [desensitize] 首次启动把安装包内置的 bge 模型自举到 ~/.cc-switch/models/
+            let _ = app.handle().path().resource_dir()
+                .map(|rd| crate::desensitize::ensure_bundled_model(Some(&rd)));
+
             let app_state = AppState::new(db);
 
             // 设置 AppHandle 用于代理故障转移时的 UI 更新
