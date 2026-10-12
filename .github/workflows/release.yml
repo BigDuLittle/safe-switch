@@ -432,7 +432,8 @@ jobs:
           CERT_B64="${{ secrets.APPLE_CERTIFICATE }}"
           if [ -z "$CERT_B64" ]; then
             echo "::notice::APPLE_CERTIFICATE secret is empty — building unsigned macOS release"
-            echo "APPLE_SIGNING_IDENTITY=" >> "$GITHUB_ENV"
+            # Do NOT set APPLE_SIGNING_IDENTITY in GITHUB_ENV: an empty string would make
+            # tauri/cli attempt to codesign with an empty identity and fail.
             exit 0
           fi
 
@@ -499,12 +500,18 @@ jobs:
         shell: bash
         timeout-minutes: 45
         env:
-          APPLE_SIGNING_IDENTITY: ${{ env.APPLE_SIGNING_IDENTITY }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
+          # APPLE_SIGNING_IDENTITY is inherited from GITHUB_ENV when the cert step ran.
+          # When absent (unsigned build), we must NOT export an empty value — tauri treats
+          # an empty identity as "sign with empty" and fails.
+          if [ -z "${APPLE_SIGNING_IDENTITY:-}" ]; then
+            echo "::notice::No signing identity — tauri will produce an unsigned .app"
+            unset APPLE_SIGNING_IDENTITY || true
+          fi
           max_attempts=3
           for attempt in $(seq 1 "$max_attempts"); do
             echo "=== macOS bundle/notarization attempt ${attempt}/${max_attempts} ==="
