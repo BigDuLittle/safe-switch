@@ -371,8 +371,6 @@ jobs:
     name: Bundle macOS release
     runs-on: macos-14
     needs: macos-binary
-    # 未配置 Apple 证书时跳过 macOS 签名/打包（fork/个人发布不需要）
-    if: ${{ secrets.APPLE_CERTIFICATE != '' }}
 
     steps:
       - name: Checkout
@@ -428,6 +426,7 @@ jobs:
           password: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Import Apple signing certificate
+        if: ${{ secrets.APPLE_CERTIFICATE != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -557,9 +556,13 @@ jobs:
             exit 1
           fi
 
-          # Staple notarization ticket to .app (Tauri already notarized it)
-          xcrun stapler staple "$APP_PATH"
-          echo "✅ .app stapled"
+          # Staple notarization ticket to .app (only when signed/notarized)
+          if [ -n "${APPLE_SIGNING_IDENTITY:-}" ]; then
+            xcrun stapler staple "$APP_PATH"
+            echo "✅ .app stapled"
+          else
+            echo "ℹ️ No Apple signing identity — skipping staple (unsigned build)"
+          fi
 
           # 1) Collect .tar.gz (updater artifact)
           NEW_TAR_GZ="CC-Switch-${VERSION}-macOS.tar.gz"
@@ -577,17 +580,17 @@ jobs:
           echo "macOS zip ready: $NEW_ZIP"
 
           # 3) Create styled DMG with create-dmg (Tauri's built-in DMG styling doesn't work on CI)
-          if [ -z "${APPLE_SIGNING_IDENTITY:-}" ]; then
-            echo "❌ APPLE_SIGNING_IDENTITY is missing before DMG creation" >&2
-            exit 1
-          fi
-
           HOMEBREW_NO_AUTO_UPDATE=1 brew install create-dmg
           NEW_DMG="CC-Switch-${VERSION}-macOS.dmg"
           DMG_STAGE_DIR="$RUNNER_TEMP/dmg-stage"
           rm -rf "$DMG_STAGE_DIR"
           mkdir -p "$DMG_STAGE_DIR"
           ditto "$APP_PATH" "$DMG_STAGE_DIR/CC Switch.app"
+
+          CODESIGN_FLAG=()
+          if [ -n "${APPLE_SIGNING_IDENTITY:-}" ]; then
+            CODESIGN_FLAG=(--codesign "$APPLE_SIGNING_IDENTITY")
+          fi
 
           create-dmg \
             --volname "CC Switch" \
@@ -598,7 +601,7 @@ jobs:
             --icon "CC Switch.app" 180 220 \
             --hide-extension "CC Switch.app" \
             --app-drop-link 480 220 \
-            --codesign "$APPLE_SIGNING_IDENTITY" \
+            "${CODESIGN_FLAG[@]}" \
             --no-internet-enable \
             "release-assets/$NEW_DMG" \
             "$DMG_STAGE_DIR"
@@ -607,6 +610,7 @@ jobs:
           echo "✅ Styled DMG created: $NEW_DMG"
 
       - name: Notarize macOS DMG
+        if: ${{ env.APPLE_SIGNING_IDENTITY != '' }}
         shell: bash
         timeout-minutes: 30
         env:
@@ -648,6 +652,7 @@ jobs:
           done
 
       - name: Verify macOS code signing and notarization
+        if: ${{ env.APPLE_SIGNING_IDENTITY != '' }}
         shell: bash
         run: |
           set -euo pipefail
