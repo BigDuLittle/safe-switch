@@ -1,0 +1,1 @@
+私钥：`C:\Users\admin\.tauri\safe-switch.key`（密码 `safeswitch2026`，别提交到 git）

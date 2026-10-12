@@ -31,14 +31,19 @@ pub fn init(db: Arc<Database>) {
 /// 已存在（且模型权重文件在）则跳过；拷贝失败仅记日志，不阻塞启动
 /// （语义匹配会自动降级为纯字面匹配）。
 pub fn ensure_bundled_model(resource_dir: Option<&Path>) {
-    let Some(resource_dir) = resource_dir else { return };
+    let Some(resource_dir) = resource_dir else {
+        return;
+    };
     let src_dir = resource_dir.join("models").join("bge-small-zh-v1.5");
     if !src_dir.exists() {
         log::debug!("bundled model dir not found: {}", src_dir.display());
         return;
     }
     let home = crate::config::get_home_dir();
-    let dst_dir = home.join(".cc-switch").join("models").join("bge-small-zh-v1.5");
+    let dst_dir = home
+        .join(".cc-switch")
+        .join("models")
+        .join("bge-small-zh-v1.5");
     let marker = dst_dir.join("model.safetensors");
     if marker.exists() {
         return;
