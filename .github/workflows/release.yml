@@ -143,11 +143,11 @@ jobs:
           WINDOWS_RELEASE_ARCH: ${{ matrix.arch || 'x86_64' }}
         run: |
           $ErrorActionPreference = 'Stop'
-          # 只发布 MSI（和便携版 exe），不打用不上的 NSIS 安装包
+          # 只发布 NSIS 安装包（WiX light.exe 处理 91MB 模型文件会失败）+ 便携版 exe
           if ($env:WINDOWS_RELEASE_ARCH -eq 'arm64') {
-            pnpm tauri build --target aarch64-pc-windows-msvc --bundles msi
+            pnpm tauri build --target aarch64-pc-windows-msvc --bundles nsis
           } else {
-            pnpm tauri build --bundles msi
+            pnpm tauri build --bundles nsis
           }
 
       - name: Build Tauri App (Linux)
@@ -168,25 +168,25 @@ jobs:
           $targetRoot = if ($isArm64) { 'src-tauri/target/aarch64-pc-windows-msvc/release' } else { 'src-tauri/target/release' }
           $assetSuffix = if ($isArm64) { '-arm64' } else { '' }
 
-          # 仅打包 MSI 安装器 + .sig（用于 Updater）
-          $msi = Get-ChildItem -Path (Join-Path $targetRoot 'bundle/msi') -Recurse -Include *.msi -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($null -eq $msi) {
-            # 兜底：全局搜索 .msi
-            $msi = Get-ChildItem -Path (Join-Path $targetRoot 'bundle') -Recurse -Include *.msi -ErrorAction SilentlyContinue | Select-Object -First 1
+          # 仅打包 NSIS 安装器 + .sig（用于 Updater）
+          $installer = Get-ChildItem -Path (Join-Path $targetRoot 'bundle/nsis') -Recurse -Include *-setup.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($null -eq $installer) {
+            # 兜底：全局搜索 nsis setup exe
+            $installer = Get-ChildItem -Path (Join-Path $targetRoot 'bundle') -Recurse -Include *-setup.exe -ErrorAction SilentlyContinue | Select-Object -First 1
           }
-          if ($null -ne $msi) {
-            $dest = "CC-Switch-$VERSION-Windows$assetSuffix.msi"
-            Copy-Item $msi.FullName (Join-Path release-assets $dest)
+          if ($null -ne $installer) {
+            $dest = "CC-Switch-$VERSION-Windows$assetSuffix-setup.exe"
+            Copy-Item $installer.FullName (Join-Path release-assets $dest)
             Write-Host "Installer copied: $dest"
-            $sigPath = "$($msi.FullName).sig"
+            $sigPath = "$($installer.FullName).sig"
             if (Test-Path $sigPath) {
               Copy-Item $sigPath (Join-Path release-assets ("$dest.sig"))
               Write-Host "Signature copied: $dest.sig"
             } else {
-              throw "Signature not found for $($msi.Name)"
+              Write-Warning "Signature not found for $($installer.Name) — updater artifacts disabled"
             }
           } else {
-            throw "No Windows MSI installer found ($env:WINDOWS_RELEASE_ARCH)"
+            throw "No Windows NSIS installer found ($env:WINDOWS_RELEASE_ARCH)"
           }
 
           # 绿色版（portable）：仅可执行文件打 zip（不参与 Updater）
@@ -797,9 +797,9 @@ jobs:
               *.tar.gz)
                 # 视为 macOS updater artifact
                 mac_url="$url"; mac_sig="$sig_content";;
-              *-Windows-arm64.msi)
+              *-Windows-arm64-setup.exe)
                 win_arm64_url="$url"; win_arm64_sig="$sig_content";;
-              *-Windows.msi)
+              *-Windows-setup.exe)
                 win_x64_url="$url"; win_x64_sig="$sig_content";;
               *-Linux-arm64.AppImage|*-Linux-arm64.appimage)
                 linux_arm64_url="$url"; linux_arm64_sig="$sig_content";;
@@ -876,8 +876,8 @@ jobs:
             ### 下载
 
             - **macOS**: `CC-Switch-${{ github.ref_name }}-macOS.dmg`（推荐）或 `CC-Switch-${{ github.ref_name }}-macOS.zip`（解压即用）
-            - **Windows (x86_64)**: `CC-Switch-${{ github.ref_name }}-Windows.msi`（安装版）或 `CC-Switch-${{ github.ref_name }}-Windows-Portable.zip`（绿色版）
-            - **Windows (ARM64)**: `CC-Switch-${{ github.ref_name }}-Windows-arm64.msi`（安装版）或 `CC-Switch-${{ github.ref_name }}-Windows-arm64-Portable.zip`（绿色版）
+            - **Windows (x86_64)**: `CC-Switch-${{ github.ref_name }}-Windows-setup.exe`（安装版）或 `CC-Switch-${{ github.ref_name }}-Windows-Portable.zip`（绿色版）
+            - **Windows (ARM64)**: `CC-Switch-${{ github.ref_name }}-Windows-arm64-setup.exe`（安装版）或 `CC-Switch-${{ github.ref_name }}-Windows-arm64-Portable.zip`（绿色版）
             - **Linux (x86_64)**: `CC-Switch-${{ github.ref_name }}-Linux-x86_64.AppImage` / `.deb` / `.rpm`
             - **Linux (ARM64)**: `CC-Switch-${{ github.ref_name }}-Linux-arm64.AppImage` / `.deb` / `.rpm`
 
