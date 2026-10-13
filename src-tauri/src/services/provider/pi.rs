@@ -61,7 +61,9 @@ pub(super) fn add(
     }
 
     let native_inserted = if add_to_live {
-        crate::pi_config::insert_pi_provider(&provider.id, &provider.settings_config)?
+        let mut settings = provider.settings_config.clone();
+        crate::desensitize::rewrite_base_url_for_proxy(&mut settings, "pi");
+        crate::pi_config::insert_pi_provider(&provider.id, &settings)?
     } else {
         false
     };

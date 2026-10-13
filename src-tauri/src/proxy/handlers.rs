@@ -893,6 +893,18 @@ pub async fn handle_chat_completions(
     State(state): State<ProxyState>,
     request: axum::extract::Request,
 ) -> Result<axum::response::Response, ProxyError> {
+    handle_chat_completions_for_app(state, request, AppType::Codex, "Codex", "codex").await
+}
+
+/// 泛化的 OpenAI Chat Completions 入口：Routing 模式（Codex）和 additive 应用
+/// （OpenCode/OpenClaw/Hermes/Pi/Mcode）脱敏透传共用。
+pub async fn handle_chat_completions_for_app(
+    state: ProxyState,
+    request: axum::extract::Request,
+    app_type: AppType,
+    tag: &'static str,
+    app_type_str: &'static str,
+) -> Result<axum::response::Response, ProxyError> {
     let (parts, req_body) = request.into_parts();
     let method = parts.method.clone();
     let uri = parts.uri;
@@ -906,7 +918,7 @@ pub async fn handle_chat_completions(
     let body_bytes = decode_codex_request_body(&mut headers, body_bytes)?;
     let mut body: Value = serde_json::from_slice(&body_bytes)
         .map_err(|e| ProxyError::Internal(format!("Failed to parse request body: {e}")))?;
-    let stack = match resolve_stack_target(&state, &AppType::Codex, &mut body) {
+    let stack = match resolve_stack_target(&state, &app_type, &mut body) {
         Ok(stack) => stack,
         Err(rejected) => return Ok(*rejected),
     };
@@ -915,9 +927,9 @@ pub async fn handle_chat_completions(
         &state,
         &body,
         &headers,
-        AppType::Codex,
-        "Codex",
-        "codex",
+        app_type.clone(),
+        tag,
+        app_type_str,
         stack,
     )
     .await?;
@@ -931,7 +943,7 @@ pub async fn handle_chat_completions(
     let forwarder = ctx.create_forwarder(&state);
     let mut result = match forwarder
         .forward_with_retry(
-            &AppType::Codex,
+            &app_type,
             method,
             &endpoint,
             body,
@@ -966,6 +978,34 @@ pub async fn handle_chat_completions(
     )
     .await
 }
+
+/// Additive 应用（OpenCode 等）脱敏透传：OpenAI 兼容协议，按 path 前缀识别 app。
+macro_rules! additive_chat_handler {
+    ($fn_name:ident, $app:expr, $tag:literal, $str:literal) => {
+        pub async fn $fn_name(
+            State(state): State<ProxyState>,
+            request: axum::extract::Request,
+        ) -> Result<axum::response::Response, ProxyError> {
+            handle_chat_completions_for_app(state, request, $app, $tag, $str).await
+        }
+    };
+}
+
+additive_chat_handler!(
+    handle_opencode_chat,
+    AppType::OpenCode,
+    "OpenCode",
+    "opencode"
+);
+additive_chat_handler!(
+    handle_openclaw_chat,
+    AppType::OpenClaw,
+    "OpenClaw",
+    "openclaw"
+);
+additive_chat_handler!(handle_hermes_chat, AppType::Hermes, "Hermes", "hermes");
+additive_chat_handler!(handle_pi_chat, AppType::Pi, "Pi", "pi");
+additive_chat_handler!(handle_mcode_chat, AppType::Mcode, "Mcode", "mcode");
 
 /// Responses 的 WebSocket 握手（GET 升级请求）：本地代理只讲 HTTP/SSE，回 426。Codex 内置
 /// 的 openai 默认先连 WebSocket，握手拿到 426 就在本会话里改走 HTTP，其它失败要把重试

@@ -128,3 +128,59 @@ pub fn mask_text(original: &str) -> String {
     let tail: String = chars[len.saturating_sub(2)..].iter().collect();
     format!("{}****{}", head, tail)
 }
+
+/// 计算 additive 应用（OpenCode/OpenClaw/Hermes/Pi/Mcode）的脱敏代理 base_url。
+///
+/// 全局脱敏开关 + 该应用开关都开时，返回 `http://127.0.0.1:PORT/<app>/v1`；
+/// 否则返回 None（调用方保持原直连 base_url 不变）。
+///
+/// 配置写入器在写 live 配置前调用：拿到 Some(url) 就把 provider 的 base_url 换成这个，
+/// 请求过代理时按 path 前缀识别 app_type，走脱敏 pipeline。
+pub fn desensitize_proxy_base_url(app: &str) -> Option<String> {
+    let db = db()?;
+    if !mapper::get_enabled(db) {
+        return None;
+    }
+    if !mapper::get_app_enabled(db, app) {
+        return None;
+    }
+    let (address, port) = db.get_proxy_listen_sync();
+    let port = if port == 0 {
+        crate::proxy::types::ProxyConfig::default().listen_port
+    } else {
+        port
+    };
+    let origin = crate::services::proxy::proxy_origin(&address, port);
+    Some(format!("{origin}/{app}/v1"))
+}
+
+/// 把 provider config JSON 里的 base_url 类字段改写成脱敏代理地址。
+/// 覆盖常见字段名：`baseURL` / `base_url` / `baseUrl`，以及 `options.baseURL`（OpenCode 风格）。
+/// 返回是否改写过。全局/应用开关没开时直接返回 false，不动原配置。
+pub fn rewrite_base_url_for_proxy(config: &mut serde_json::Value, app: &str) -> bool {
+    let Some(proxy_url) = desensitize_proxy_base_url(app) else {
+        return false;
+    };
+    let mut rewritten = false;
+    if let Some(obj) = config.as_object_mut() {
+        for key in ["baseURL", "base_url", "baseUrl"] {
+            if let Some(v) = obj.get_mut(key) {
+                if v.is_string() {
+                    *v = serde_json::Value::String(proxy_url.clone());
+                    rewritten = true;
+                }
+            }
+        }
+        if let Some(options) = obj.get_mut("options").and_then(|o| o.as_object_mut()) {
+            for key in ["baseURL", "base_url", "baseUrl"] {
+                if let Some(v) = options.get_mut(key) {
+                    if v.is_string() {
+                        *v = serde_json::Value::String(proxy_url.clone());
+                        rewritten = true;
+                    }
+                }
+            }
+        }
+    }
+    rewritten
+}
