@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useLayoutEffect, useCallback, useMemo } from "react";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useTranslation } from "react-i18next";
 import { Eye, EyeOff, RefreshCw } from "lucide-react";
@@ -62,8 +62,8 @@ export function UniversalProviderFormModal({
   const [pendingProvider, setPendingProvider] =
     useState<UniversalProvider | null>(null);
 
-  // 初始化表单
-  useEffect(() => {
+  // Populate before paint so opening the panel never shows empty/stale fields.
+  useLayoutEffect(() => {
     if (editingProvider) {
       // 编辑模式：加载现有数据
       setName(editingProvider.name);
@@ -346,6 +346,7 @@ requires_openai_auth = true`;
   return (
     <FullScreenPanel
       isOpen={isOpen}
+      trackUnsavedChanges
       title={
         isEditMode
           ? t("universalProvider.edit", { defaultValue: "编辑统一供应商" })

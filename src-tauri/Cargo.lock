@@ -660,7 +660,7 @@ checksum = "6a1f896587b6f2c069c73d2f0913e2d590c3990285cd2f0b6aa02b786b4c679c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.7",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -842,7 +842,7 @@ dependencies = [
 
 [[package]]
 name = "cc-switch"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "arboard",
@@ -859,6 +859,7 @@ dependencies = [
  "dirs 5.0.1",
  "flate2",
  "futures",
+ "gtk",
  "hmac",
  "http",
  "http-body",
@@ -875,6 +876,7 @@ dependencies = [
  "objc2 0.5.2",
  "objc2-app-kit 0.2.2",
  "once_cell",
+ "png 0.18.1",
  "regex",
  "reqwest 0.12.28",
  "rquickjs",
@@ -6064,9 +6066,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "3.0.7"
+version = "3.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d62a2e0561533f2ca2561d0cf27fd9fedb640a1bf2616ff5d5c80d99017faadc"
+checksum = "d78c8dee4c7bf0e14673097256fed6142ce9d3b85a408189d07482442145823b"
 dependencies = [
  "proc-macro2",
  "quote",

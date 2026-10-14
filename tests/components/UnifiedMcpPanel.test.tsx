@@ -1,3 +1,8 @@
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+} from "@tanstack/react-query";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -22,6 +27,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/hooks/useMcp", () => ({
+  MCP_UPSERT_MUTATION_KEY: ["mcp", "upsert"],
   useAllMcpServers: () => ({
     data: mocks.serversMap,
     isLoading: mocks.isLoading,
@@ -93,8 +99,29 @@ function makeServer(id: string, overrides: ServerOverrides = {}): McpServer {
   } as McpServer;
 }
 
-const renderPanel = (onBlocked?: (blocked: boolean) => void) =>
-  render(<UnifiedMcpPanel onInteractionBlockedChange={onBlocked} />);
+const renderPanel = (
+  onBlocked?: (blocked: boolean) => void,
+  extra?: React.ReactNode,
+) =>
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <UnifiedMcpPanel onInteractionBlockedChange={onBlocked} />
+      {extra}
+    </QueryClientProvider>,
+  );
+
+/** 模拟编辑页发起、一直没完成的保存 */
+function PendingEditorSave() {
+  const save = useMutation({
+    mutationKey: ["mcp", "upsert"],
+    mutationFn: () => new Promise<void>(() => {}),
+  });
+  return (
+    <button type="button" onClick={() => save.mutate()}>
+      start-editor-save
+    </button>
+  );
+}
 
 const rowNames = () =>
   within(screen.getByRole("list", { name: "mcpPage.listLabel" }))
@@ -235,6 +262,110 @@ describe("UnifiedMcpPanel", () => {
       enabled: false,
     });
   });
+
+  it.each<["error" | "warning", string[]]>([
+    ["error", ["alpha", "beta"]],
+    ["warning", ["beta"]],
+  ])(
+    "shows a %s toast when bulk writes fail",
+    async (level, failedIds) => {
+      mocks.serversMap = {
+        alpha: makeServer("alpha"),
+        beta: makeServer("beta"),
+      };
+      mocks.bulkToggle.mockImplementationOnce(async ({ serverIds }) => ({
+        succeeded: serverIds.filter((id: string) => !failedIds.includes(id)),
+        failed: failedIds.map((item) => ({ item, error: "write failed" })),
+      }));
+      renderPanel();
+      await userEvent.click(
+        screen.getAllByRole("button", { name: /appMatrix.columnAria/ })[1],
+      );
+      await userEvent.click(
+        screen.getByRole("button", { name: "appMatrix.pop.enableRest" }),
+      );
+
+      const expected =
+        level === "error" ? mocks.toastError : mocks.toastWarning;
+      await waitFor(() =>
+        expect(expected).toHaveBeenCalledWith(
+          expect.stringContaining("appMatrix.toast.partialFail"),
+          expect.objectContaining({ closeButton: true }),
+        ),
+      );
+      // 全部失败没有可撤销的，部分失败只撤销写成功的那些
+      expect(Boolean(expected.mock.calls[0][1].action)).toBe(
+        level === "warning",
+      );
+      expect(mocks.toastSuccess).not.toHaveBeenCalled();
+      expect(
+        screen.getAllByRole("button", { name: "appMatrix.cell.fail" }),
+      ).toHaveLength(failedIds.length);
+    },
+  );
+
+  it.each(["success", "partial", "total", "rejected"] as const)(
+    "reports the real result of a bulk undo (%s)",
+    async (outcome) => {
+      mocks.serversMap = {
+        alpha: makeServer("alpha"),
+        beta: makeServer("beta"),
+      };
+      renderPanel();
+      await userEvent.click(
+        screen.getAllByRole("button", { name: /appMatrix.columnAria/ })[1],
+      );
+      await userEvent.click(
+        screen.getByRole("button", { name: "appMatrix.pop.enableRest" }),
+      );
+      await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalledTimes(1));
+      const [, options] = mocks.toastSuccess.mock.calls[0];
+      mocks.toastSuccess.mockClear();
+
+      const failedIds =
+        outcome === "success"
+          ? []
+          : outcome === "partial"
+            ? ["beta"]
+            : ["alpha", "beta"];
+      if (outcome === "rejected") {
+        mocks.bulkToggle.mockRejectedValueOnce(new Error("undo failed"));
+      } else {
+        mocks.bulkToggle.mockImplementationOnce(async ({ serverIds }) => ({
+          succeeded: serverIds.filter((id: string) => !failedIds.includes(id)),
+          failed: failedIds.map((item) => ({ item, error: "undo failed" })),
+        }));
+      }
+      act(() => options.action.onClick());
+
+      const expected =
+        outcome === "success"
+          ? mocks.toastSuccess
+          : outcome === "partial"
+            ? mocks.toastWarning
+            : mocks.toastError;
+      await waitFor(() =>
+        expect(expected).toHaveBeenCalledWith(
+          outcome === "success"
+            ? "appMatrix.toast.undone"
+            : "common.bulkToggleFailed",
+          { closeButton: true },
+        ),
+      );
+      for (const other of [
+        mocks.toastSuccess,
+        mocks.toastWarning,
+        mocks.toastError,
+      ]) {
+        if (other !== expected) expect(other).not.toHaveBeenCalled();
+      }
+      expect(mocks.bulkToggle).toHaveBeenLastCalledWith({
+        serverIds: ["alpha", "beta"],
+        app: "codex",
+        enabled: false,
+      });
+    },
+  );
 
   it("marks a failed write with a warning and retries the wanted state", async () => {
     mocks.serversMap = { serena: makeServer("serena") };
@@ -411,12 +542,22 @@ describe("UnifiedMcpPanel", () => {
     expect(screen.getByText("mcpPage.import.added")).toBeInTheDocument();
   });
 
-  it("reports the blocked state while the drawer is open", async () => {
+  it("locks navigation while the editor page is saving", async () => {
+    const onBlocked = vi.fn();
+    renderPanel(onBlocked, <PendingEditorSave />);
+    expect(onBlocked).toHaveBeenLastCalledWith(false);
+    await userEvent.click(
+      screen.getByRole("button", { name: "start-editor-save" }),
+    );
+    await waitFor(() => expect(onBlocked).toHaveBeenLastCalledWith(true));
+  });
+
+  it("does not lock navigation just because the editor page is open", async () => {
     const onBlocked = vi.fn();
     mocks.serversMap = { alpha: makeServer("alpha") };
     renderPanel(onBlocked);
     expect(onBlocked).toHaveBeenLastCalledWith(false);
     await userEvent.click(screen.getByRole("button", { name: "mcpPage.add" }));
-    expect(onBlocked).toHaveBeenLastCalledWith(true);
+    expect(onBlocked).toHaveBeenLastCalledWith(false);
   });
 });

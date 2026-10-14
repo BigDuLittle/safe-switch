@@ -144,7 +144,7 @@ pub fn desensitize_proxy_base_url(app: &str) -> Option<String> {
     if !mapper::get_app_enabled(db, app) {
         return None;
     }
-    let (address, port) = db.get_proxy_listen_sync();
+    let (address, port) = db.get_proxy_client_endpoint_sync();
     let port = if port == 0 {
         crate::proxy::types::ProxyConfig::default().listen_port
     } else {

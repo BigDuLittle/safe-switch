@@ -11,6 +11,7 @@ import {
   getResolvedLang,
 } from "./format";
 import { usageTable } from "./usageTable";
+import { PerformanceCells, PerformanceHeaders } from "./statsColumns";
 import type { UsageRangeSelection } from "@/types/usage";
 
 interface ModelStatsTableProps {
@@ -55,22 +56,22 @@ export function ModelStatsTable({
     <div className="flex flex-col">
       <div className={usageTable.scroller}>
         <table
-          className={cn(usageTable.table, "min-w-[560px]")}
+          className={cn(usageTable.table, "min-w-[620px]")}
           aria-label={t("usage.modelStats")}
         >
           <thead>
             <tr className={usageTable.headRow}>
               <th className={usageTable.th}>{t("usage.model")}</th>
-              <th className={usageTable.thEnd}>{t("usage.requests")}</th>
-              <th className={usageTable.thEnd}>{t("usage.tokens")}</th>
-              <th className={usageTable.thEnd}>{t("usage.totalCost")}</th>
-              <th className={usageTable.thEnd}>{t("usage.avgCost")}</th>
+              <th className={usageTable.th}>{t("usage.requests")}</th>
+              <th className={usageTable.th}>{t("usage.tokens")}</th>
+              <th className={usageTable.th}>{t("usage.cost")}</th>
+              <PerformanceHeaders />
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className={usageTable.empty}>
+                <td colSpan={7} className={usageTable.empty}>
                   {t("usage.noData")}
                 </td>
               </tr>
@@ -85,27 +86,22 @@ export function ModelStatsTable({
                       {stat.model}
                     </span>
                   </td>
-                  <td className={usageTable.tdEnd}>
+                  <td className={usageTable.td}>
                     {fmtInt(stat.requestCount, locale)}
                   </td>
                   <td
-                    className={usageTable.tdEnd}
+                    className={usageTable.td}
                     title={fmtInt(stat.totalTokens, locale)}
                   >
                     {formatTokensCompact(stat.totalTokens, locale)}
                   </td>
                   <td
-                    className={cn(usageTable.tdEnd, "font-medium")}
-                    title={fmtUsd(stat.totalCost, 6)}
+                    className={cn(usageTable.td, "font-medium")}
+                    title={`${fmtUsd(stat.totalCost, 6)} · ${t("usage.avgCost")} ${fmtUsd(stat.avgCostPerRequest, 4)}`}
                   >
                     {fmtUsd(stat.totalCost, 2)}
                   </td>
-                  <td
-                    className={cn(usageTable.tdEnd, "text-fg-2")}
-                    title={fmtUsd(stat.avgCostPerRequest, 6)}
-                  >
-                    {fmtUsd(stat.avgCostPerRequest, 4)}
-                  </td>
+                  <PerformanceCells stat={stat} />
                 </tr>
               ))
             )}

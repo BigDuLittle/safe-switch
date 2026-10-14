@@ -63,6 +63,21 @@ fn detect_provider(base_url: &str) -> Option<CodingPlanProvider> {
     }
 }
 
+/// 按地址认出的套餐 id，取值与前端 `CodingPlanProviderEntry.id` 一致
+/// （写进 `usage_script.coding_plan_provider`，用量弹窗下拉按它回显）。
+/// 智谱团队版与个人版地址相同、无法自动区分，这里永远返回个人版。
+pub(crate) fn detect_provider_id(base_url: &str) -> Option<&'static str> {
+    Some(match detect_provider(base_url)? {
+        CodingPlanProvider::Kimi => "kimi",
+        CodingPlanProvider::ZhipuCn | CodingPlanProvider::ZhipuEn => "zhipu",
+        CodingPlanProvider::MiniMaxCn | CodingPlanProvider::MiniMaxEn => "minimax",
+        CodingPlanProvider::ZenMux => "zenmux",
+        CodingPlanProvider::Volcengine => "volcengine",
+        CodingPlanProvider::OpencodeGo => "opencode_go",
+        CodingPlanProvider::CommandCode => "command_code",
+    })
+}
+
 fn now_millis() -> i64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -111,6 +126,7 @@ fn make_error(msg: String) -> SubscriptionQuota {
         tiers: vec![],
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: Some(msg),
         queried_at: Some(now_millis()),
     }
@@ -144,6 +160,7 @@ async fn query_kimi(api_key: &str) -> Result<SubscriptionQuota, String> {
             tiers: vec![],
             extra_usage: None,
             reset_credits: None,
+            credits_balance: None,
             error: Some(format!("Authentication failed (HTTP {status})")),
             queried_at: Some(now_millis()),
         });
@@ -221,6 +238,7 @@ async fn query_kimi(api_key: &str) -> Result<SubscriptionQuota, String> {
         tiers,
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: None,
         queried_at: Some(now_millis()),
     })
@@ -367,6 +385,7 @@ async fn query_zhipu(base_url: &str, api_key: &str) -> Result<SubscriptionQuota,
             tiers: vec![],
             extra_usage: None,
             reset_credits: None,
+            credits_balance: None,
             error: Some(format!("Authentication failed (HTTP {status})")),
             queried_at: Some(now_millis()),
         });
@@ -425,6 +444,7 @@ fn zhipu_quota_from_body(body: &serde_json::Value) -> SubscriptionQuota {
         tiers,
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: None,
         queried_at: Some(now_millis()),
     }
@@ -467,6 +487,7 @@ async fn query_minimax(api_key: &str, is_cn: bool) -> Result<SubscriptionQuota, 
             tiers: vec![],
             extra_usage: None,
             reset_credits: None,
+            credits_balance: None,
             error: Some(format!("Authentication failed (HTTP {status})")),
             queried_at: Some(now_millis()),
         });
@@ -514,6 +535,7 @@ async fn query_minimax(api_key: &str, is_cn: bool) -> Result<SubscriptionQuota, 
         tiers,
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: None,
         queried_at: Some(now_millis()),
     })
@@ -547,6 +569,7 @@ async fn query_zenmux(base_url: &str, api_key: &str) -> Result<SubscriptionQuota
             tiers: vec![],
             extra_usage: None,
             reset_credits: None,
+            credits_balance: None,
             error: Some(format!("Authentication failed (HTTP {status})")),
             queried_at: Some(now_millis()),
         });
@@ -654,6 +677,7 @@ async fn query_zenmux(base_url: &str, api_key: &str) -> Result<SubscriptionQuota
         tiers,
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: None,
         queried_at: Some(now_millis()),
     })
@@ -809,6 +833,7 @@ async fn query_opencode_go(api_key: &str) -> Result<SubscriptionQuota, String> {
             tiers: vec![],
             extra_usage: None,
             reset_credits: None,
+            credits_balance: None,
             error: Some(format!("Authentication failed (HTTP {status})")),
             queried_at: Some(now_millis()),
         });
@@ -842,6 +867,7 @@ async fn query_opencode_go(api_key: &str) -> Result<SubscriptionQuota, String> {
         tiers,
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: None,
         queried_at: Some(now_millis()),
     })
@@ -922,6 +948,7 @@ fn command_code_auth_error() -> SubscriptionQuota {
         tiers: vec![],
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: Some("Authentication failed (HTTP 401 Unauthorized)".to_string()),
         queried_at: Some(now_millis()),
     }
@@ -1033,6 +1060,7 @@ fn parse_command_code_quota(
         tiers,
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: None,
         queried_at: Some(now_millis()),
     }
@@ -1514,6 +1542,7 @@ fn volcengine_success(tiers: Vec<QuotaTier>, plan: Option<String>) -> Subscripti
         tiers,
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: None,
         queried_at: Some(now_millis()),
     }
@@ -1528,6 +1557,7 @@ fn volcengine_auth_error(detail: String) -> SubscriptionQuota {
         tiers: vec![],
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: Some(detail),
         queried_at: Some(now_millis()),
     }
@@ -1620,6 +1650,7 @@ fn coding_plan_not_found(error: &str) -> SubscriptionQuota {
         tiers: vec![],
         extra_usage: None,
         reset_credits: None,
+        credits_balance: None,
         error: Some(error.to_string()),
         queried_at: None,
     }
@@ -1679,6 +1710,7 @@ async fn query_zhipu_team_at(
             tiers: vec![],
             extra_usage: None,
             reset_credits: None,
+            credits_balance: None,
             error: Some(format!("Authentication failed (HTTP {status})")),
             queried_at: Some(now_millis()),
         });
