@@ -184,3 +184,18 @@ pub fn rewrite_base_url_for_proxy(config: &mut serde_json::Value, app: &str) -> 
     }
     rewritten
 }
+
+/// fork 统一 hook：在写入 additive 应用 live 配置前，按需把 provider 的 base_url 指回本地脱敏代理。
+/// 返回 owned Provider（非 additive 应用原样 clone）。
+/// 所有 additive 应用（OpenCode/OpenClaw/Hermes/Mcode/Pi）共用同一个改写入口，
+/// 后续上游改各自的写入分支时不会再产生多处冲突。
+pub fn prepare_provider_for_additive(
+    original: &crate::provider::Provider,
+    app_type: &crate::app_config::AppType,
+) -> crate::provider::Provider {
+    let mut provider = original.clone();
+    if app_type.is_additive_mode() {
+        rewrite_base_url_for_proxy(&mut provider.settings_config, app_type.as_str());
+    }
+    provider
+}

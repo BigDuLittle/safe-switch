@@ -1007,6 +1007,19 @@ additive_chat_handler!(handle_hermes_chat, AppType::Hermes, "Hermes", "hermes");
 additive_chat_handler!(handle_pi_chat, AppType::Pi, "Pi", "pi");
 additive_chat_handler!(handle_mcode_chat, AppType::Mcode, "Mcode", "mcode");
 
+/// fork 独立路由组：所有 additive 应用（OpenCode/OpenClaw/Hermes/Pi/Mcode）的脱敏透传路由。
+/// 抽成独立 Router 后，server.rs 里只需 `.merge(additive_chat_routes())` 一行，
+/// 后续上游改 build_router 时不会再跟这 5 条 route 冲突。
+pub fn additive_chat_routes() -> axum::Router<crate::proxy::server::ProxyState> {
+    use axum::routing::post;
+    axum::Router::new()
+        .route("/opencode/v1/chat/completions", post(handle_opencode_chat))
+        .route("/openclaw/v1/chat/completions", post(handle_openclaw_chat))
+        .route("/hermes/v1/chat/completions", post(handle_hermes_chat))
+        .route("/pi/v1/chat/completions", post(handle_pi_chat))
+        .route("/mcode/v1/chat/completions", post(handle_mcode_chat))
+}
+
 /// Responses 的 WebSocket 握手（GET 升级请求）：本地代理只讲 HTTP/SSE，回 426。Codex 内置
 /// 的 openai 默认先连 WebSocket，握手拿到 426 就在本会话里改走 HTTP，其它失败要把重试
 /// 用完才回退。

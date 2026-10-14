@@ -523,6 +523,9 @@ pub(crate) fn codex_managed_oauth_live_auth(
 
 /// Write live configuration snapshot for a provider
 pub(crate) fn write_live_snapshot(app_type: &AppType, provider: &Provider) -> Result<(), AppError> {
+    // fork 统一 hook：additive 应用在写 live 配置前按需把 base_url 指回脱敏代理。
+    // 所有 additive 应用共用这一处 hook，避免在每个分支重复插代码导致 merge 冲突。
+    let provider = crate::desensitize::prepare_provider_for_additive(provider, app_type);
     match app_type {
         AppType::Claude => {
             return Err(AppError::localized(
@@ -606,10 +609,6 @@ pub(crate) fn write_live_snapshot(app_type: &AppType, provider: &Provider) -> Re
 
             // Validate with the existing type, but persist the original fragment:
             // the type does not describe every OpenCode provider/model field.
-            // 脱敏开关开时，把 options.baseURL 指回本地代理（按 opencode path 前缀路由）。
-            let mut config_to_write = config_to_write;
-            crate::desensitize::rewrite_base_url_for_proxy(&mut config_to_write, "opencode");
-
             let opencode_config_result =
                 serde_json::from_value::<OpenCodeProviderConfig>(config_to_write.clone());
 
@@ -647,13 +646,9 @@ pub(crate) fn write_live_snapshot(app_type: &AppType, provider: &Provider) -> Re
             use crate::openclaw_config;
             use crate::openclaw_config::OpenClawProviderConfig;
 
-            // 脱敏开关开时，把 baseUrl 指回本地代理
-            let mut settings = provider.settings_config.clone();
-            crate::desensitize::rewrite_base_url_for_proxy(&mut settings, "openclaw");
-
             // Convert settings_config to OpenClawProviderConfig
             let openclaw_config_result =
-                serde_json::from_value::<OpenClawProviderConfig>(settings.clone());
+                serde_json::from_value::<OpenClawProviderConfig>(provider.settings_config.clone());
 
             match openclaw_config_result {
                 Ok(config) => {
@@ -667,11 +662,14 @@ pub(crate) fn write_live_snapshot(app_type: &AppType, provider: &Provider) -> Re
                         e
                     );
                     // Try to write as raw JSON if it looks valid
-                    if settings.get("baseUrl").is_some()
-                        || settings.get("api").is_some()
-                        || settings.get("models").is_some()
+                    if provider.settings_config.get("baseUrl").is_some()
+                        || provider.settings_config.get("api").is_some()
+                        || provider.settings_config.get("models").is_some()
                     {
-                        openclaw_config::set_provider(&provider.id, settings)?;
+                        openclaw_config::set_provider(
+                            &provider.id,
+                            provider.settings_config.clone(),
+                        )?;
                         log::info!(
                             "OpenClaw provider '{}' written as raw JSON to live config",
                             provider.id
@@ -686,15 +684,11 @@ pub(crate) fn write_live_snapshot(app_type: &AppType, provider: &Provider) -> Re
             }
         }
         AppType::Hermes => {
-            let mut settings = provider.settings_config.clone();
-            crate::desensitize::rewrite_base_url_for_proxy(&mut settings, "hermes");
-            crate::hermes_config::set_provider(&provider.id, settings)?;
+            crate::hermes_config::set_provider(&provider.id, provider.settings_config.clone())?;
             log::debug!("Hermes provider '{}' written to live config", provider.id);
         }
         AppType::Mcode => {
-            let mut settings = provider.settings_config.clone();
-            crate::desensitize::rewrite_base_url_for_proxy(&mut settings, "mcode");
-            crate::mcode_config::set_provider(&provider.id, settings)?
+            crate::mcode_config::set_provider(&provider.id, provider.settings_config.clone())?
         }
         AppType::Pi => {
             return Err(AppError::InvalidInput(

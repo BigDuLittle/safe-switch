@@ -327,24 +327,8 @@ impl ProxyServer {
                 "/codex/v1/chat/completions",
                 post(handlers::handle_chat_completions),
             )
-            // Additive 应用脱敏透传：base_url 指向 http://127.0.0.1:PORT/<app>/v1
-            .route(
-                "/opencode/v1/chat/completions",
-                post(handlers::handle_opencode_chat),
-            )
-            .route(
-                "/openclaw/v1/chat/completions",
-                post(handlers::handle_openclaw_chat),
-            )
-            .route(
-                "/hermes/v1/chat/completions",
-                post(handlers::handle_hermes_chat),
-            )
-            .route("/pi/v1/chat/completions", post(handlers::handle_pi_chat))
-            .route(
-                "/mcode/v1/chat/completions",
-                post(handlers::handle_mcode_chat),
-            )
+            // Additive 应用脱敏透传路由组（fork 独立模块，上游改动不影响）
+            .merge(handlers::additive_chat_routes())
             // OpenAI Models API (Codex CLI reachability check)
             .route("/models", get(handlers::handle_models))
             .route("/v1/models", get(handlers::handle_models))
