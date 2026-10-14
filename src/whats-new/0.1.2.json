@@ -1,0 +1,19 @@
+{
+  "version": "0.1.2",
+  "items": [
+    {
+      "type": "new",
+      "zh": "隐私保护（脱敏）功能扩展到 OpenCode、OpenClaw、Hermes、Pi、Mcode",
+      "zh-TW": "隱私保護（脫敏）功能擴展到 OpenCode、OpenClaw、Hermes、Pi、Mcode",
+      "en": "Privacy protection (desensitize) now covers OpenCode, OpenClaw, Hermes, Pi and Mcode",
+      "ja": "プライバシー保護（脱敏）が OpenCode、OpenClaw、Hermes、Pi、Mcode に対応"
+    },
+    {
+      "type": "improve",
+      "zh": "合并上游 v4.0.11（216 个更新），包含 Codex 聚合、用量统计、新预设等",
+      "zh-TW": "上游 v4.0.11（216 件の更新）をマージ、Codex アグリゲーション・使用量統計・新規プリセットなどを含む",
+      "en": "Merge upstream v4.0.11 (216 commits): Codex aggregation, usage stats, new presets",
+      "ja": "アップストリーム v4.0.11（216コミット）を統合"
+    }
+  ]
+}
