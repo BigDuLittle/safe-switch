@@ -1,0 +1,12 @@
+{
+  "version": "0.1.3",
+  "items": [
+    {
+      "type": "fix",
+      "zh": "自签名更新通道切换到本仓库",
+      "zh-TW": "自簽名更新通道切換到本倉庫",
+      "en": "Switch auto-update channel to this repo with self-signed releases",
+      "ja": "自己のリポジトリへ更新チャンネルを切り替え"
+    }
+  ]
+}
