@@ -101,9 +101,33 @@ git push origin main
 - 手动修改点：0 个（desensitize 模块、路由、hook 全自动合并）
 - 耗时：~15 分钟
 
-## 六、后续同步建议
+## 六、发版前必查（v0.1.2 踩坑记录）
+
+每次打 tag 发版前，必须满足上游的 release 校验：
+
+**1. `src/whats-new/<版本>.json` 必须存在**
+- 文件名 = 去掉 `v` 的版本号，如 `0.1.2.json`
+- 必须包含 `"version": "0.1.2"` 和 `"items": [...]`
+- 格式参考 `src/whats-new/4.0.11.json`
+
+**2. 文案长度硬限制**（由 `tests/config/whatsNewEntries.test.ts` 强制）
+| 字段 | 上限 |
+|---|---|
+| `zh` / `zh-TW` | 40 字 |
+| `ja` | 50 字 |
+| `en` | 100 字 |
+| items 数量 | ≤ 4 条 |
+| `type` 枚举 | `new` / `improve` / `fix` |
+
+写长了 CI 直接红，本地先跑 `pnpm vitest run tests/config/whatsNewEntries.test.ts` 验证。
+
+**3. 不要用空字符串绕过**
+- `items: []` 合法（表示不弹窗），但正式版本建议写 1-2 条核心更新。
+
+## 七、后续同步建议
 
 1. **上游发版就合**，不要攒。攒得越久冲突越多。
 2. **每次同步后立刻发版**（patch 号 +1），让 CI 跑一遍 release 流水线。
-3. **如果上游大改 proxy 或 live.rs**，先看 diff 再决定 merge 还是 cherry-pick 关键 fix。
-4. **不要 force push**，正常 merge commit 就行，保留上游历史。
+3. **发 tag 前先跑 whats-new 测试**，避免像 v0.1.2 一样连 retag 三次。
+4. **如果上游大改 proxy 或 live.rs**，先看 diff 再决定 merge 还是 cherry-pick 关键 fix。
+5. **不要 force push**，正常 merge commit 就行，保留上游历史。
