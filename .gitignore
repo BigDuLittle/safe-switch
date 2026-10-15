@@ -29,3 +29,7 @@ copilot-api
 .history
 CODEBUDDY.md
 mainWindow.js
+
+# signing key
+.signing-key.txt
+*.key
